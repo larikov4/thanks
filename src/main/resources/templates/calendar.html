@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+	<head>
+		<link rel="stylesheet" th:href="@{/css/vendor/bootstrap/css/bootstrap.min.css}"
+			  href="../static/css/vendor/bootstrap/css/bootstrap.min.css" />
+		<link rel="stylesheet" th:href="@{/css/flat-ui.css}" href="../static/css/flat-ui.css" />
+		<link rel="stylesheet" th:href="@{/css/font-awesome.css}" href="../static/css/font-awesome.css"/>
+		<link rel='stylesheet' th:href="@{/css/select2.css}" href="../static/css/select2.css"/>
+		<link rel='stylesheet' th:href="@{/css/toastr.css}" href="../static/css/toastr.css"/>
+
+		<link rel='stylesheet' th:href="@{/css/fullcalendar.css}" href="../static/css/fullcalendar.css"/>
+
+		<link rel='stylesheet' th:href="@{/css/styles.css}" href="../static/css/styles.css"/>
+	</head>
+
+	<body>
+		<main class="entity-main hidden-sidebar">
+			<div id='calendar'></div>
+		</main>
+
+		<aside class="hidden-sidebar">
+			<div class="sidebar-toggler fa-lg fa fa-bars active"></div>
+			<nav>
+				<ul>
+					<li class="nav-item">
+						<a class="nav-link active" href="javascript:void(0);">
+							<span class="fa fa-calendar fa-lg nav-icon"></span>
+							<span class="nav-text">Calendar</span>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="users">
+							<span class="fa fa-user fa-lg nav-icon"></span>
+							<span class="nav-text">Users</span>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="equipment">
+							<span class="fa fa-camera fa-lg nav-icon"></span>
+							<span class="nav-text">Equipment</span>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="locations">
+							<span class="fa fa-flag fa-lg nav-icon"></span>
+							<span class="nav-text">Locations</span>
+						</a>
+					</li>
+				</ul>
+			</nav>
+			<a class="sign-out" href="logout">
+				<span class="fa fa-sign-out fa-lg"></span>
+				<span>Logout</span>
+			</a>
+		</aside>
+
+		<div id="popover-container" class="hide">
+			<div class="col-sm-12">
+				<p class="date"><strong>11 July, 11.00-20.00</strong></p>
+			</div>
+			<div class="col-sm-6">
+				<p><strong>Author:</strong><span class="author">Yevhen Larikov</span></p>
+			</div>
+			<div class="col-sm-6">
+				<p><strong>Location:</strong><span class="location">room #101</span></p>
+			</div>
+			<div class="col-sm-12">
+				<p><strong>Users:</strong><span class="users">Yevhen Larikov, Liudmila Larikova</span></p>
+			</div>
+			<div class="col-sm-12">
+				<p><strong>Equipment:</strong><span class="equipment"> camera, tripod</span></p>
+			</div>
+			<div class="col-sm-offset-1 col-sm-3">
+				<button type="button" class="btn btn-primary history"><i class="fa fa-history"></i>history</button>
+			</div>
+			<div class="col-sm-offset-1 col-sm-3">
+				<button type="button" class="btn btn-primary editing"><i class="fa fa-pencil-square-o"></i>edit</button>
+			</div>
+			<div class="col-sm-offset-1 col-sm-3">
+				<button type="button" class="btn btn-primary delete"><i class="fa fa-trash-o "></i>delete</button>
+			</div>
+		</div>
+
+		<div class="modal modal-edit fade" tabindex="-1" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title">Event form</h4>
+					</div>
+					<div class="modal-body">
+						<div class="popup-container">
+							<form sec:authorize="hasAuthority('event_edit')" autocomplete="off" class="event-form">
+								<div class="form-group row">
+									<label class="col-sm-3 form-control-label" for="name">Event name:</label>
+									<div class="col-sm-8">
+										<input type="text" class="form-control" name="name" id="name"/>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-3 form-control-label" for="start-date">Start date:</label>
+									<div class="col-md-4">
+										<input type="text" class="form-control date" name="start-date" id="start-date"/>
+									</div>
+									<div class="col-md-4">
+										<select id="start-time" name="start-time" class="time form-control select select-primary select-block"></select>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-3 form-control-label" for="end-date">Finish date:</label>
+									<div class="col-md-4">
+										<input type="text" class="form-control date" name="end-date" id="end-date"/>
+									</div>
+									<div class="col-md-4">
+										<select id="end-time" name="end-time" class="time form-control select select-primary select-block"></select>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-3 form-control-label" for="location">Location:</label>
+									<div class="col-sm-8">
+										<select id="location" name="location" class="form-control select select-primary select-block required">
+											<!--<option value="0">Location</option>-->
+											<!--<option value="1">Location1</option>-->
+											<!--<option value="2">Location2</option>-->
+											<!--<option value="3">Location3</option>-->
+											<!--<option value="4">Location4</option>-->
+										</select>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-3 form-control-label">User:</label>
+									<div class="col-sm-8">
+										<select id="user" name="user" multiple="multiple" class="form-control multiselect multiselect-primary select-primary">
+											<!--<option value="0">Yevhen</option>-->
+											<!--<option value="1">Yevhen1</option>-->
+											<!--<option value="2">Yevhen2</option>-->
+											<!--<option value="3">Yevhen3</option>-->
+											<!--<option value="4">Yevhen4</option>-->
+										</select>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-3 form-control-label">Equipment:</label>
+									<div class="col-sm-8">
+										<select id="equipment" name="equipment" multiple="multiple" class="form-control multiselect multiselect-primary select-primary">
+											<!--<option value="0">Equipment</option>-->
+											<!--<option value="1">Equipment1</option>-->
+											<!--<option value="2">Equipmen213t2</option>-->
+											<!--<option value="3">Equipmen12t3</option>-->
+											<!--<option value="4">Equipment4</option>-->
+										</select>
+									</div>
+								</div>
+							</form>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+						<button type="button" id="save" class="btn btn-primary">Save changes</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+
+		<div class="modal modal-history fade" tabindex="-1" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title">History</h4>
+					</div>
+					<div class="modal-body"></div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+
+		<script th:inline="javascript">
+			var USERS = /*[[${users}]]*/ null;
+			var EQUIPMENT = /*[[${equipment}]]*/ null;
+			var LOCATIONS = /*[[${locations}]]*/ null;
+			var EVENTS = /*[[${events}]]*/ null;
+			var IS_EDITABLE = /*[[ ${#authorization.expression("hasAuthority('event_edit')")} ]]*/ null;
+			var CURRENT_USER_NAME = /*[[ ${#authentication.name} ]]*/ null;
+		</script>
+
+		<script th:src="@{/js/lib/jquery.min.js}" src="../static/js/lib/jquery.min.js"></script>
+		<script th:src="@{/js/lib/bootstrap.js}" src="../static/js/lib/bootstrap.js"></script>
+		<script th:src="@{/js/lib/flat-ui.js}" src="../static/js/lib/flat-ui.js"></script>
+		<script th:src="@{/js/lib/select2.full.js}" src="../static/js/lib/select2.full.js"></script>
+		<script th:src="@{/js/lib/bootbox.js}" src="../static/js/lib/bootbox.js"></script>
+		<script th:src="@{/js/lib/toastr.min.js}" src="../static/js/lib/toastr.min.js}"></script>
+		<script th:src="@{/js/common.js}" src="../static/js/common.js"></script>
+
+		<script th:src="@{/js/lib/moment.min.js}" src="../static/js/lib/moment.min.js"></script>
+		<script th:src="@{/js/fullcalendar.js}" src="../static/js/fullcalendar.js"></script>
+
+		<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+		<script src="//ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.js"></script>
+		<script th:src="@{/js/calendar.js}" src="../static/js/calendar.js"></script>
+
+	</body>
+
+</html>

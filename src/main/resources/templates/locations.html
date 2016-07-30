@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+	<head>
+		<link rel="stylesheet" th:href="@{/css/vendor/bootstrap/css/bootstrap.min.css}"
+			  href="../static/css/vendor/bootstrap/css/bootstrap.min.css" />
+		<link rel="stylesheet" th:href="@{/css/flat-ui.css}" href="../static/css/flat-ui.css" />
+		<link rel="stylesheet" th:href="@{/css/font-awesome.css}" href="../static/css/font-awesome.css"/>
+		<link rel='stylesheet' th:href="@{/css/select2.css}" href="../static/css/select2.css"/>
+
+		<link rel='stylesheet' th:href="@{/css/jsgrid.css}" href="../static/css/jsgrid.css"/>
+		<link rel='stylesheet' th:href="@{/css/jsgrid-theme.css}" href="../static/css/jsgrid-theme.css"/>
+
+		<link rel='stylesheet' th:href="@{/css/styles.css}" href="../static/css/styles.css"/>
+	</head>
+
+	<body>
+		<main class="entity-main">
+			<div id='jsGrid'></div>
+		</main>
+
+		<aside>
+			<div class="sidebar-toggler fa-lg fa fa-bars"></div>
+			<nav>
+				<ul>
+					<li class="nav-item">
+						<a class="nav-link" href="/">
+							<span class="fa fa-calendar fa-lg nav-icon"></span>
+							<span class="nav-text">Calendar</span>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="users">
+							<span class="fa fa-user fa-lg nav-icon"></span>
+							<span class="nav-text">Users</span>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="equipment">
+							<span class="fa fa-camera fa-lg nav-icon"></span>
+							<span class="nav-text">Equipment</span>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link active" href="javascript:void(0);">
+							<span class="fa fa-flag fa-lg nav-icon"></span>
+							<span class="nav-text">Locations</span>
+						</a>
+					</li>
+				</ul>
+			</nav>
+			<a class="sign-out" href="logout">
+				<span class="fa fa-sign-out fa-lg"></span>
+				<span>Logout</span>
+			</a>
+		</aside>
+
+		<script th:inline="javascript">
+			var LOCATIONS = /*[[${locations}]]*/ null;
+			var ROOT_URL = /*[[${#httpServletRequest.requestURI}]]*/ null;
+			var IS_EDITABLE = /*[[ ${#authorization.expression("hasAuthority('location_edit')")} ]]*/ null;
+		</script>
+
+		<script th:src="@{/js/lib/jquery.min.js}" src="../static/js/lib/jquery.min.js"></script>
+		<script th:src="@{/js/lib/bootstrap.js}" src="../static/js/lib/bootstrap.js"></script>
+		<script th:src="@{/js/lib/flat-ui.js}" src="../static/js/lib/flat-ui.js"></script>
+		<script th:src="@{/js/lib/select2.full.js}" src="../static/js/lib/select2.full.js"></script>
+		<script th:src="@{/js/lib/toastr.min.js}" src="../static/js/lib/toastr.min.js}"></script>
+		<script th:src="@{/js/common.js}" src="../static/js/common.js"></script>
+
+		<script th:src="@{/js/lib/jsgrid.js}" src="../static/js/lib/jsgrid.js"></script>
+		<script th:src="@{/js/locations.js}" src="../static/js/locations.js"></script>
+	</body>
+
+</html>
