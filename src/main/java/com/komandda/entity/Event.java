@@ -38,6 +38,8 @@ public class Event {
     @DBRef
     private Location location;
 
+    private Date created;
+
     public String getId() {
         return id;
     }
@@ -106,6 +108,14 @@ public class Event {
 
     public void setLocation(Location location) {
         this.location = location;
+    }
+
+    public Date getCreated() {
+        return created;
+    }
+
+    public void setCreated(Date created) {
+        this.created = created;
     }
 
     @Override

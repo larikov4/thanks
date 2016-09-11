@@ -15,6 +15,7 @@ $(document).ready(function() {
 
 	var currentEvent;
 	var currentUser;
+	var movingEvent = null;
 	var REST_URL = "/rest/events";
 	var wasModalSubmitted = false;
 
@@ -315,7 +316,7 @@ $(document).ready(function() {
 	 	allDaySlot: false,
 	 	axisFormat: 'H:mm',
         firstHour:6,
-        columnFormat: 'dddd',
+        columnFormat: 'dddd D.M',
         height: 900,
 	 	eventClick: IS_EDITABLE? onEventClick : function(){},
 	 	eventDrop: function(event, delta, revert){
@@ -365,12 +366,44 @@ $(document).ready(function() {
 			}
 			$modal.modal('show');
 		},
+		dayHit: !IS_EDITABLE ? function(){} : function(date, x) {
+		    if(movingEvent){
+                $('#calendar').fullCalendar('removeEvents', movingEvent.id);
+		        var duration = getDurationInMinutes(padTime(movingEvent.startPoint), padTime(date));
+		        if(duration>0) {
+		            movingEvent.start = movingEvent.startPoint;
+                    movingEvent.end = date.add(30, 'minute');
+                    $('#calendar').fullCalendar('renderEvent', movingEvent);
+		        } else if(duration<-30) {
+                    movingEvent.start = date;
+                    movingEvent.end = movingEvent.startPoint;
+                    $('#calendar').fullCalendar('renderEvent', movingEvent);
+                } else {
+                    movingEvent.start = movingEvent.startPoint;
+                    movingEvent.end = movingEvent.startPoint;
+                }
+		    } else {
+		        movingEvent = {
+		            startPoint:date,
+		            start:date,
+                    end:date,
+		            id: 'stub id',
+		            isStub:true,
+		            author: {
+		                username:currentUser.username
+		            }
+		        };
+		    }
+		},
 		eventRender: function (event, $target, view) {
 			var authorColor = repo.colors.users[event.author.username];
 			$target.css('background-color', authorColor);
 			$target.css('border-color', authorColor);
 
-			if(view.type.contains("agend")){
+			if(event.isStub && !$target.find('.fc-content').hasClass('empty-field')) {
+                $target.find('.fc-content').addClass('empty-field');
+			}
+			if(view.type.contains("agend") && event.location){
 				var locationColor = repo.colors.locations[event.location.name];
 				$target.find('.fc-title').css('background-color', locationColor);
 
@@ -389,7 +422,7 @@ $(document).ready(function() {
 				for(var i=0;i<event.users.length;i++){
 					gridHolder.append(gridElement.clone()
 						.css('background-color', repo.colors.users[event.users[i].username])
-						.text(event.users[i].username.split(' ').map(function(str){return str[0];}).join(''))
+						.text(event.users[i].username.split(' ').map(function(str){return str.trim()[0];}).join(''))
 					);
 				}
 				$target.append(gridHolder);
@@ -417,8 +450,9 @@ $(document).ready(function() {
 							$container = $('#popover-container');
 							$container.find('.date').empty();
 							$container.find('.author').empty();
+							$container.find('.created').empty();
 							$container.find('.location').empty();
-							$container.find('.user').empty();
+							$container.find('.users').empty();
 							$container.find('.equipment').empty();
 							$('body').off('click', '.editing');
 						}
@@ -433,9 +467,14 @@ $(document).ready(function() {
 							}
 							$popover.find('.date').text(formatDuration(event));
 							$popover.find('.author').text(event.author.username);
+							console.log(event)
+                            $popover.find('.created').text(moment(event.created).format('YYYY-MM-DD HH:mm'));
 							$popover.find('.location').text(event.location.name);
-							$popover.find('.user').text(event.users.map(function(user) {return user.username}));
-							$popover.find('.equipment').text(event.equipment.map(function(equipment) {return equipment.name}));
+							var $li = $('<li>');
+							var usersContainer = $popover.find('.users');
+							event.users.forEach(function(user) {usersContainer.append($li.clone().text(user.username))});
+							var equipmentContainer = $popover.find('.equipment');
+							event.equipment.forEach(function(equipment) {equipmentContainer.append($li.clone().text(equipment.name))});
 							$('body').on('click', '.editing', function() {
 								var $modal = $('.modal-edit');
 								$modal.find('#name').val(event.title);
@@ -456,6 +495,20 @@ $(document).ready(function() {
 			}
         }
 	});
+
+    $('#calendar').on('mouseup', function(){
+        if(movingEvent && isDurationMoreThanOrEqualsOneHour(padTime(movingEvent.start), padTime(movingEvent.end))){
+            $('#calendar').fullCalendar('removeEvents', movingEvent.id);
+            var $modal = $('.modal-edit');
+            $modal.find('#start-date').val(movingEvent.start.format('YYYY-MM-DD'));
+            $modal.find('#end-date').val(movingEvent.end.format('YYYY-MM-DD'));
+            $modal.find('#start-time').select2('val', movingEvent.start.hour() + ":" + padZero(movingEvent.start.minute()));
+            $modal.find('#end-time').select2('val', movingEvent.end.hour() + ":" + padZero(movingEvent.end.minute()));
+            $modal.find('#end-time').trigger('change');
+            $modal.modal('show');
+            movingEvent = null;
+        }
+    })
 
 	function onEventClick(event) {
 		currentEvent = event;
@@ -616,10 +669,14 @@ $(document).ready(function() {
         return event.keyCode != 13;
     });
 
-    
+    function getDurationInMinutes(firstTimeStr, secondTimeStr) {
+        var duration = new Date('01/01/2011 ' + secondTimeStr).getTime() - new Date('01/01/2011 ' + firstTimeStr).getTime();
+        return Math.floor(duration / 60000);
+    }
+
     function getDurationInHours(firstTimeStr, secondTimeStr) {
         var duration = new Date('01/01/2011 ' + secondTimeStr).getTime() - new Date('01/01/2011 ' + firstTimeStr).getTime();
-        return Math.floor(duration /3600000);
+        return Math.floor(duration / 3600000);
     }
 
 	function isDurationMoreThanOrEqualsOneHour(firstTimeStr, secondTimeStr){

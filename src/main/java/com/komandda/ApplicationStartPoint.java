@@ -16,29 +16,47 @@
 
 package com.komandda;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.komandda.entity.Permission;
+import com.komandda.entity.User;
+import com.komandda.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.context.web.SpringBootServletInitializer;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
+import javax.annotation.PostConstruct;
+import java.util.Collections;
 
 @SpringBootApplication
 public class ApplicationStartPoint {
 
+	@Autowired
+	private UserService userService;
+
 	public static void main(String[] args) throws Exception {
 		SpringApplication.run(ApplicationStartPoint.class, args);
-		//"--debug"
+	}
+
+	@PostConstruct
+	void init() {
+		if(userService.findAll().isEmpty()) {
+			User admin = generateDefaultUser();
+			userService.save(admin);
+		}
+	}
+
+	private User generateDefaultUser() {
+		User admin = new User();
+		admin.setId("1");
+		admin.setUsername("admin");
+		admin.setPassword("admin");
+		admin.setEmail("no email");
+		admin.setColor("#E67E22");
+		admin.setAccountNonExpired(true);
+		admin.setAccountNonLocked(true);
+		admin.setCredentialsNonExpired(true);
+		admin.setEnabled(true);
+		admin.setAuthorities(Collections.singletonList(new Permission("2", "user_edit")));
+		return admin;
 	}
 
 }

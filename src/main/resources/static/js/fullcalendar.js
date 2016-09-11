@@ -3275,6 +3275,11 @@ var Grid = FC.Grid = Class.extend({
 						}
 					}
 				}
+                view.triggerDayHit(
+                    _this.getHitSpan(hit),
+                    _this.getHitEl(hit),
+                    ev
+                );
 			},
 			hitOut: function() {
 				dayClickHit = null;
@@ -8250,6 +8255,23 @@ var View = FC.View = Class.extend({
 		);
 	},
 
+    triggerDayHit: function(span, dayEl, ev) {
+        this.trigger(
+            'dayHit',
+            dayEl,
+            this.calendar.applyTimezone(span.start), // convert to calendar's timezone for external API
+            ev
+        );
+    },
+
+    triggerDayOut: function(span, dayEl, ev) {
+        this.trigger(
+            'dayOut',
+            dayEl,
+            this.calendar.applyTimezone(span.start), // convert to calendar's timezone for external API
+            ev
+        );
+    },
 
 	/* Date Utils
 	------------------------------------------------------------------------------------------------------------------*/

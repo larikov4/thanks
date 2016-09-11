@@ -203,7 +203,7 @@ a .fa-lg {
 }
 
 .popover {
-    max-width:450px;
+    max-width:250px;
     position:fixed;
 }
 
@@ -216,7 +216,11 @@ a .fa-lg {
     padding: 5px 0;
 }
 
-.popover p {
+.popover-content > div {
+    padding-bottom: 10px;
+}
+
+.popover div {
     font-size:12px;
     margin: 0;
 }
@@ -235,8 +239,40 @@ a .fa-lg {
     height:1.1em;
 }
 
-p.date {
+.popover .date {
     text-align:center;
+}
+
+.popover-content strong, .popover-content ul{
+    display:inline-block;
+    vertical-align: top;
+}
+
+.popover-content ul {
+    margin-left: 5px;
+
+}
+
+.popover-content li {
+    list-style:square inside;
+}
+
+.popover-content button{
+    width:80px;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.popover-content button.history{
+    margin-left: 35px;
+}
+
+.popover-content button.editing{
+    margin-left:13px;
+}
+
+.popover-content button.delete{
+    margin: 15px 0 10px 80px;
 }
 
 span.color {
@@ -525,13 +561,10 @@ a.ui-state-default {
     cursor:pointer;
 }
 
-.popover button {
-    font-size: 0.7em;
-}
-
 .fc-event {
     border:none;
     position: relative;
+
 }
 .fc-event .editable {
     cursor: pointer;
@@ -564,7 +597,9 @@ a.ui-state-default {
 }
 
 .fc-event {
-    /*border-bottom: 1px solid #2C3E50;*/
+    margin-top: 2px;
+    margin-left: 20px;
+    margin-bottom: 1px;
 }
 
 .fc-toolbar h2 {
@@ -622,11 +657,6 @@ label.error {
     /*background-color: #000614;*/
 /*}*/
 
-.fc-event {
-    margin-top: 2px;
-    margin-bottom: 1px;
-}
-
 .fc-event:hover {
     z-index: 1000!important;
 }
@@ -637,7 +667,14 @@ label.error {
 .fc-content {
     border: 1px solid #333;
 }
+.fc-content.empty-field {
+    border-bottom-style: none;
+}
 .fc-event-username {
     border-top: 1px solid #333;
     border-left: 1px solid #333;
+}
+
+* {
+    border-radius:0!important;
 }
