@@ -47,6 +47,7 @@ public class EventService {
     }
 
     public Event insert(Event event, User author) {
+        event.setCreated(new Date());
         Event eventWithId = repository.insert(event);
         changelog.insert(new EventChangeItem(author, new Date(), eventWithId));
         sendCreationEventEmail(event);
