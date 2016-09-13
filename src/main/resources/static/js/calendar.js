@@ -4,6 +4,7 @@ $(document).ready(function() {
 		locations: {},
 		equipment: {},
 		users: {},
+		userIds: {},
 		colors:{
             locations: {},
             equipment: {},
@@ -29,11 +30,12 @@ $(document).ready(function() {
 			repo.colors.equipment[EQUIPMENT[i].name] = EQUIPMENT[i].color;
 		}
 		for(var i=0;i<USERS.length;i++) {
-			repo.users[USERS[i].username] = USERS[i].id;
+		    repo.users[USERS[i].username] = USERS[i];
+			repo.userIds[USERS[i].username] = USERS[i].id;
 			repo.colors.users[USERS[i].username] = USERS[i].color;
 		}
 		currentUser = {
-            id:repo.users[CURRENT_USER_NAME],
+            id:repo.userIds[CURRENT_USER_NAME],
             username:CURRENT_USER_NAME
 		};
 	})();
@@ -89,8 +91,9 @@ $(document).ready(function() {
         };
         data.users = $container.find('#user').val().map(function(username){
             return {
-                id:repo.users[username],
-                username:username
+                id:repo.userIds[username],
+                username:username,
+                email:repo.users[username].email
             };
         });
         data.equipment = $container.find('#equipment').val().map(function(name){
@@ -236,7 +239,7 @@ $(document).ready(function() {
 				ajaxCounter++;
 				var $select = $('.modal-edit').find('#user');
 				var prev = $select.val();
-				prepareSelect(data, 'username', Object.keys(repo.users), 'user');
+				prepareSelect(data, 'username', Object.keys(repo.userIds), 'user');
 				if(prev){
 					$select.val(prev);
 				}

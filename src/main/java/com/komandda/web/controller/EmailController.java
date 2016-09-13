@@ -19,7 +19,7 @@ public class EmailController {
 
     @RequestMapping(method = RequestMethod.GET)
     public String getEventById() {
-        mailHelper.sendMail("larikov4@gmail.com", "zrikotofuka@gmail.com","test", "success");
+        mailHelper.sendMail("zrikotofuka@gmail.com","test", "success");
         return "email was sent";
     }
 

@@ -49,7 +49,7 @@ public class ApplicationStartPoint {
 		admin.setId("1");
 		admin.setUsername("admin");
 		admin.setPassword("admin");
-		admin.setEmail("no email");
+		admin.setEmail("");
 		admin.setColor("#E67E22");
 		admin.setAccountNonExpired(true);
 		admin.setAccountNonLocked(true);
