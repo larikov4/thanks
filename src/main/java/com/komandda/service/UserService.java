@@ -32,12 +32,12 @@ public class UserService {
         return hidePassword(repository.findByUsernameAndPassword(username, password));
     }
 
-    public User insert(User equipment){
-        return hidePassword(repository.insert(equipment));
+    public User insert(User user){
+        return hidePassword(repository.insert(user));
     }
 
-    public User save(User equipment){
-        return hidePassword(repository.save(equipment));
+    public User save(User user){
+        return hidePassword(repository.save(user));
     }
 
     public void delete(User user){
@@ -48,14 +48,14 @@ public class UserService {
         return hidePassword(freeEntitiesService.getFreeUsers(start, end, id));
     }
 
-    private List<User> hidePassword(List<User> users) {
+    public List<User> hidePassword(List<User> users) {
         for(User user : users) {
             hidePassword(user);
         }
         return users;
     }
 
-    private User hidePassword(User user) {
+    public User hidePassword(User user) {
         if(user==null){
             return null;
         }

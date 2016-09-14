@@ -832,4 +832,27 @@ $(document).ready(function() {
 
     $("select").select2({ dropdownCssClass : 'dropdown' });
 
+    (function connect() {
+        var socket = new SockJS('/websocket');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            stompClient.subscribe('/event/create', function (message) {
+                var createdEvent = JSON.parse(message.body);
+                $('#calendar').fullCalendar('removeEvents', createdEvent.id);
+                $('#calendar').fullCalendar('renderEvent', createdEvent);
+            });
+            stompClient.subscribe('/event/update', function (message) {
+                var updatedEvent = JSON.parse(message.body);
+                $('#calendar').fullCalendar('removeEvents', updatedEvent.id);
+                $('#calendar').fullCalendar('renderEvent', updatedEvent);
+            });
+            stompClient.subscribe('/event/delete', function (message) {
+                var deletedEvent = JSON.parse(message.body);
+                $('#calendar').fullCalendar('removeEvents', deletedEvent.id);
+            });
+
+        });
+    })();
 });
+
+

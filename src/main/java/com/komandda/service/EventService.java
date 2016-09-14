@@ -8,6 +8,7 @@ import com.komandda.repository.EventRepository;
 import com.komandda.service.mail.MailHelper;
 import com.komandda.web.controller.EmailController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -27,39 +28,71 @@ public class EventService {
     private UserService userService;
 
     @Autowired
-    private EquipmentService equipmentService;
-
-    @Autowired
-    private LocationService locationService;
-
-    @Autowired
     private EventChangelogService changelog;
 
     @Autowired
     private MailHelper mailHelper;
 
+    @Autowired
+    private SimpMessagingTemplate webSocket;
+
     public List<Event> findAll() {
-        return repository.findAll();
+        return hidePassword(repository.findAll());
     }
 
     public Event findOne(String id) {
-        return repository.findOne(id);
+        return hidePassword(repository.findOne(id));
     }
 
     public Event insert(Event event, User author) {
         event.setCreated(new Date());
         Event eventWithId = repository.insert(event);
+
+        hidePassword(eventWithId);
+        userService.hidePassword(author);
+
         changelog.insert(new EventChangeItem(author, new Date(), eventWithId));
-        sendCreationEventEmail(event);
+        sendCreationEventEmail(eventWithId);
+        webSocket.convertAndSend("/event/create", eventWithId);
         return eventWithId;
+    }
+
+    public Event save(Event event, User author) {
+        Event savedEvent = repository.save(event);
+
+        hidePassword(savedEvent);
+        userService.hidePassword(author);
+
+        changelog.insert(new EventChangeItem(author, new Date(), event));
+        sendUpdatingEventEmail(event);
+        webSocket.convertAndSend("/event/update", event);
+        return savedEvent;
+    }
+
+    public void delete(Event event) {
+        repository.delete(event);
+        webSocket.convertAndSend("/event/delete", hidePassword(event));
+    }
+
+    private List<Event> hidePassword(List<Event> events) {
+        for(Event event : events) {
+            hidePassword(event);
+        }
+        return events;
+    }
+
+    private Event hidePassword(Event event){
+        userService.hidePassword(event.getUsers());
+        userService.hidePassword(event.getAuthor());
+        return event;
     }
 
     private void sendCreationEventEmail(Event event) {
         StringBuilder eventBuilder = new StringBuilder();
         eventBuilder.append("Title ").append(event.getTitle()).append(System.lineSeparator())
-            .append("Date ").append(event.getStart() + " to " + event.getEnd()).append(System.lineSeparator())
-            .append("Author ").append(event.getAuthor().getUsername()).append(System.lineSeparator())
-            .append("Location ").append(event.getLocation().getName()).append(System.lineSeparator());
+                .append("Date ").append(event.getStart()).append(" to ").append(event.getEnd()).append(System.lineSeparator())
+                .append("Author ").append(event.getAuthor().getUsername()).append(System.lineSeparator())
+                .append("Location ").append(event.getLocation().getName()).append(System.lineSeparator());
         eventBuilder.append("Users: ").append(System.lineSeparator());
         for(User user : event.getUsers()) {
             eventBuilder.append("\t").append(user.getUsername()).append(System.lineSeparator());
@@ -76,22 +109,12 @@ public class EventService {
             String email = user.getEmail();
             if(!StringUtils.isEmpty(email)) {
                 String emailBody = new StringBuilder()
-                    .append("Hello ").append(user.getUsername()).append(System.lineSeparator())
-                    .append("New event was created.").append(System.lineSeparator())
-                    .append(createdEvent).toString();
+                        .append("Hello ").append(user.getUsername()).append(System.lineSeparator())
+                        .append("New event was created.").append(System.lineSeparator())
+                        .append(createdEvent).toString();
                 mailHelper.sendMail(email, "New event created", emailBody);
             }
         }
-    }
-
-    public Event save(Event event, User author) {
-        changelog.insert(new EventChangeItem(author, new Date(), event));
-        sendUpdatingEventEmail(event);
-        return repository.save(event);
-    }
-
-    public void delete(Event event) {
-        repository.delete(event);
     }
 
 
