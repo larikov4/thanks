@@ -679,7 +679,7 @@ label.error {
     border-radius:0!important;
 }
 
-.jsgrid-row td, .jsgrid-header-row th {
+.jsgrid-table td, .jsgrid-header-row th {
     overflow: hidden;
     text-overflow: ellipsis;
 }

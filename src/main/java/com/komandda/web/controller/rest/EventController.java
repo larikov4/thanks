@@ -48,8 +48,8 @@ public class EventController {
 
     @PreAuthorize("hasAuthority('event_edit')")
     @RequestMapping(method = RequestMethod.DELETE)
-    public void delete(@RequestBody Event event) {
-        service.delete(event);
+    public void delete(@RequestBody Event event, @AuthenticationPrincipal User user) {
+        service.delete(event, user);
     }
 
 }

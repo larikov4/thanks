@@ -56,8 +56,8 @@ public class UserService {
     }
 
     public User hidePassword(User user) {
-        if(user==null){
-            return null;
+        if(user == null || user.getPassword() == null){
+            return user;
         }
         String starsInsteadOfPassword = user.getPassword().replaceAll(".", "*");
         user.setPassword(starsInsteadOfPassword);
