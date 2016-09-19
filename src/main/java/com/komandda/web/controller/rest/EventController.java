@@ -6,6 +6,7 @@ import com.komandda.entity.User;
 import com.komandda.service.EquipmentService;
 import com.komandda.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,9 @@ public class EventController {
     @Autowired
     private EventService service;
 
+    @Autowired
+    private SimpMessagingTemplate webSocket;
+
     @RequestMapping(method = RequestMethod.GET)
     public List<Event> findAll() {
         throw new UnsupportedOperationException();
@@ -36,20 +40,20 @@ public class EventController {
 
     @PreAuthorize("hasAuthority('event_edit')")
     @RequestMapping(method = RequestMethod.POST)
-    public Event add(@RequestBody Event event, @AuthenticationPrincipal User user) {
-        return service.insert(event, user);
+    public void add(@RequestBody Event event, @AuthenticationPrincipal User user) {
+        webSocket.convertAndSend("/event/create", service.insert(event, user));
     }
 
     @PreAuthorize("hasAuthority('event_edit')")
     @RequestMapping(method = RequestMethod.PUT)
-    public Event update(@RequestBody Event event, @AuthenticationPrincipal User user) {
-        return service.save(event, user);
+    public void update(@RequestBody Event event, @AuthenticationPrincipal User user) {
+        webSocket.convertAndSend("/event/update", service.save(event, user));
     }
 
     @PreAuthorize("hasAuthority('event_edit')")
     @RequestMapping(method = RequestMethod.DELETE)
     public void delete(@RequestBody Event event, @AuthenticationPrincipal User user) {
-        service.delete(event, user);
+        webSocket.convertAndSend("/event/delete", service.delete(event, user));
     }
 
 }

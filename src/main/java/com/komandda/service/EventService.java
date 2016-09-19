@@ -34,8 +34,6 @@ public class EventService {
     @Autowired
     private MailHelper mailHelper;
 
-    @Autowired
-    private SimpMessagingTemplate webSocket;
 
     public List<Event> findAll() {
         return hidePassword(repository.findAll());
@@ -53,7 +51,6 @@ public class EventService {
         userService.hidePassword(author);
 
         changelog.insert(new EventChangeItem(author, new Date(), eventWithId));
-        webSocket.convertAndSend("/event/create", eventWithId);
         return eventWithId;
     }
 
@@ -65,14 +62,13 @@ public class EventService {
         userService.hidePassword(author);
 
         changelog.insert(new EventChangeItem(author, new Date(), event));
-        webSocket.convertAndSend("/event/update", event);
         return savedEvent;
     }
 
-    public void delete(Event event, User author) {
+    public Event delete(Event event, User author) {
         repository.delete(event);
         sendDeletingEventEmail(event, author);
-        webSocket.convertAndSend("/event/delete", hidePassword(event));
+        return hidePassword(event);
     }
 
     private List<Event> hidePassword(List<Event> events) {

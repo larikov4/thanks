@@ -370,6 +370,7 @@ $(document).ready(function() {
 			$modal.modal('show');
 		},
 		dayHit: !IS_EDITABLE ? function(){} : function(date, x) {
+		    currentEvent = null;
 		    if(movingEvent){
                 $('#calendar').fullCalendar('removeEvents', movingEvent.id);
 		        var duration = getDurationInMinutes(padTime(movingEvent.startPoint), padTime(date));
@@ -446,7 +447,7 @@ $(document).ready(function() {
 					title:event.title + '<button type="button" class="close" data-dismiss="popover-container"><span>x</span></button>',
 					html: true,
 					animation:true,
-					placement:'auto top',
+					placement:'auto left',
 					content: function() {
 						function clearPopover() {
 							$('.popover').popover('hide');
@@ -527,8 +528,7 @@ $(document).ready(function() {
 				contentType: "application/json",
 				data: JSON.stringify(event)
 			}).success(function(data){
-				$('#calendar').fullCalendar( 'renderEvent', data);
-				$('.modal-edit').modal('hide');
+			    $('.modal-edit').modal('hide');
 			}).fail(function(e){
 				toastr["error"]("Server error #5. Please refresh the page.");
 			});
@@ -541,9 +541,6 @@ $(document).ready(function() {
 				contentType: "application/json",
 				data: JSON.stringify(event)
 			}).success(function (data) {
-				$('#calendar').fullCalendar('removeEvents', data.id);
-				$('#calendar').fullCalendar('renderEvent', data);
-				$('#calendar').fullCalendar("rerenderEvents");
 				$('.modal-edit').modal('hide')
 			}).fail(function (e) {
 				toastr["error"]("Server error #6. Please refresh the page.");
@@ -559,8 +556,6 @@ $(document).ready(function() {
 			contentType: "application/json",
 			data: JSON.stringify(currentEvent)
 		}).done(function(data){
-			$('#calendar').fullCalendar('removeEvents',currentEvent.id);
-			$('#calendar').fullCalendar("rerenderEvents");
 			$('.popover').popover('hide');
 			resetForm();
 		}).fail(function(e){
@@ -838,7 +833,6 @@ $(document).ready(function() {
         stompClient.connect({}, function (frame) {
             stompClient.subscribe('/event/create', function (message) {
                 var createdEvent = JSON.parse(message.body);
-                $('#calendar').fullCalendar('removeEvents', createdEvent.id);
                 $('#calendar').fullCalendar('renderEvent', createdEvent);
             });
             stompClient.subscribe('/event/update', function (message) {
@@ -852,6 +846,19 @@ $(document).ready(function() {
             });
 
         });
+        function equals(localEvent, serverEvent) {
+            function mapUsername(user){return user.username;}
+            function mapEquipmentName(equipment){return equipment.name;}
+            return !!localEvent && !!serverEvent
+                && localEvent.author.username === serverEvent.author.username
+                && localEvent.created === serverEvent.created
+                && localEvent.title === serverEvent.title
+                && localEvent.start.format('YYYY-MM-DD HH:mm') === serverEvent.start.replace("T", " ")
+                && localEvent.end.format('YYYY-MM-DD HH:mm') === serverEvent.end.replace("T", " ")
+                && localEvent.location.name === serverEvent.location.name
+                && JSON.stringify(localEvent.users.map(mapUsername)) === JSON.stringify(serverEvent.users.map(mapUsername))
+                && JSON.stringify(localEvent.equipment.map(mapEquipmentName)) === JSON.stringify(serverEvent.equipment.map(mapEquipmentName));
+        }
     })();
 });
 
