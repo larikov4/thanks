@@ -24,6 +24,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import javax.annotation.PostConstruct;
+import java.util.Arrays;
 import java.util.Collections;
 
 @SpringBootApplication
@@ -55,7 +56,11 @@ public class ApplicationStartPoint {
 		admin.setAccountNonLocked(true);
 		admin.setCredentialsNonExpired(true);
 		admin.setEnabled(true);
-		admin.setAuthorities(Collections.singletonList(new Permission("2", "user_edit")));
+		admin.setAuthorities(Arrays.asList(
+				new Permission("1", "event_edit"),
+				new Permission("3", "location_edit"),
+				new Permission("4", "equipment_edit"),
+				new Permission("2", "user_edit")));
 		return admin;
 	}
 
