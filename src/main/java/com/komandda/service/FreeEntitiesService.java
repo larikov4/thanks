@@ -74,7 +74,10 @@ public class FreeEntitiesService {
         List<Location> locations = locationRepository.findAll();
         List<Event> activeEvents = getActiveEvents(start, end, id);
         for(Event event : activeEvents) {
-            locations.remove(event.getLocation());
+            Location location = event.getLocation();
+            if(!location.isParallel()) {
+                locations.remove(location);
+            }
         }
         return locations;
     }

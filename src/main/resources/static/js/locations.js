@@ -48,6 +48,7 @@ $grid.jsGrid({
     fields: [
         { name: "name", type: "text", width: 150, validate: "required" },
         { name: "color", type: "select", width: 50, items: COLORS, valueField: "hex", textField: "name", validate: "required" },
+        { name: "parallel", type: "checkbox", width: 20},
         IS_EDITABLE ? { type: "control", width: 15, deleteButton: false }:''
     ]
 });

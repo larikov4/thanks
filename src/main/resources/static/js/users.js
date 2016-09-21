@@ -95,7 +95,7 @@ $grid.jsGrid({
     fields: [
         { name: "username", type: "text", width: 40, validate: "required" },
         { name: "password", type: "text", width: 30, validate: "required" },
-        { name: "email", type: "text", width: 30, validate: "required" },
+        { name: "email", type: "text", width: 30 },
         { name: "color", type: "select", width: 50, items: COLORS, valueField: "hex", textField: "name", validate: "required" },
         { name: "event edit", type: "checkbox", width: 20},
         { name: "user edit", type: "checkbox", width: 20},

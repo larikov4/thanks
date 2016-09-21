@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -45,6 +46,7 @@ public class EventService {
 
     public Event insert(Event event, User author) {
         event.setCreated(new Date());
+        setEmptyEquipmentListIfAbsent(event);
         Event eventWithId = repository.insert(event);
 
         hidePassword(eventWithId);
@@ -56,6 +58,7 @@ public class EventService {
 
     public Event save(Event event, User author) {
         sendUpdatingEventEmail(event, author);
+        setEmptyEquipmentListIfAbsent(event);
         Event savedEvent = repository.save(event);
 
         hidePassword(savedEvent);
@@ -69,6 +72,12 @@ public class EventService {
         repository.delete(event);
         sendDeletingEventEmail(event, author);
         return hidePassword(event);
+    }
+
+    private void setEmptyEquipmentListIfAbsent(Event event) {
+        if(event.getEquipment() == null) {
+            event.setEquipment(Collections.<Equipment>emptyList());
+        }
     }
 
     private List<Event> hidePassword(List<Event> events) {

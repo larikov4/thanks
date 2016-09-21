@@ -17,6 +17,8 @@ public class Location {
 
     private String color;
 
+    private boolean parallel;
+
     public String getId() {
         return id;
     }
@@ -39,6 +41,14 @@ public class Location {
 
     public void setColor(String color) {
         this.color = color;
+    }
+
+    public boolean isParallel() {
+        return parallel;
+    }
+
+    public void setParallel(boolean parallel) {
+        this.parallel = parallel;
     }
 
     @Override

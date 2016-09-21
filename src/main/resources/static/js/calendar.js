@@ -96,12 +96,14 @@ $(document).ready(function() {
                 email:repo.users[username].email
             };
         });
-        data.equipment = $container.find('#equipment').val().map(function(name){
-            return {
-                id:repo.equipment[name],
-                name:name
-            };
-        });
+        if($container.find('#equipment').val()) {
+            data.equipment = $container.find('#equipment').val().map(function(name){
+                return {
+                    id:repo.equipment[name],
+                    name:name
+                };
+            });
+        }
         return data;
     }
 
@@ -413,7 +415,7 @@ $(document).ready(function() {
 
 				var $container = $('<div>').addClass('equipment-container');
 				var $element = $('<div>');
-				for(var i=0;i<event.equipment.length;i++){
+				for(var i=0;event.equipment && i<event.equipment.length;i++){
 					$container.append($element.clone().text(event.equipment[i].name + "")
 						//.css('color', repo.colors.equipment[event.equipment[i].name])
 					);
@@ -478,7 +480,9 @@ $(document).ready(function() {
 							var usersContainer = $popover.find('.users');
 							event.users.forEach(function(user) {usersContainer.append($li.clone().text(user.username))});
 							var equipmentContainer = $popover.find('.equipment');
-							event.equipment.forEach(function(equipment) {equipmentContainer.append($li.clone().text(equipment.name))});
+							if(event.equipment) {
+							    event.equipment.forEach(function(equipment) {equipmentContainer.append($li.clone().text(equipment.name))});
+							}
 							$('body').on('click', '.editing', function() {
 								var $modal = $('.modal-edit');
 								$modal.find('#name').val(event.title);
@@ -784,7 +788,6 @@ $(document).ready(function() {
                 isFreeUser:true
             },
 			equipment: {
-                required:true,
                 isFreeEquipment:true
             }
 		},
@@ -803,9 +806,6 @@ $(document).ready(function() {
 			},
 			user: {
 				required:"Please enter at least one user"
-			},
-			equipment: {
-				required:"Please enter at least one equipment"
 			}
 		},
 
