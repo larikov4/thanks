@@ -15,7 +15,7 @@ public class Equipment {
 
     private String name;
 
-    private String color;
+    private String type;
 
     public String getId() {
         return id;
@@ -33,12 +33,12 @@ public class Equipment {
         this.name = name;
     }
 
-    public String getColor() {
-        return color;
+    public String getType() {
+        return type;
     }
 
-    public void setColor(String color) {
-        this.color = color;
+    public void setType(String type) {
+        this.type = type;
     }
 
     @Override
