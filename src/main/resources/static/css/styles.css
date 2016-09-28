@@ -575,6 +575,7 @@ a.ui-state-default {
     overflow: hidden;
     text-overflow: ellipsis;
     padding: 0 3px;
+    font-size:12px;
 }
 
 .fc-event .row {
@@ -662,17 +663,20 @@ label.error {
 }
 
 .fc-event .fc-bg {
-    border: 1px solid #333;
+    border: 1px solid #999;
 }
 .fc-content {
-    border: 1px solid #333;
+    border: 1px solid #999;
 }
 .fc-content.empty-field {
     border-bottom-style: none;
 }
+.fc-content .fc-title {
+    font-size: 13px;
+}
 .fc-event-username {
-    border-top: 1px solid #333;
-    border-left: 1px solid #333;
+    border-top: 1px solid #999;
+    border-left: 1px solid #999;
 }
 
 * {
