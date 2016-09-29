@@ -88,64 +88,67 @@
 					<div class="modal-body">
 						<div class="popup-container">
 							<form sec:authorize="hasAuthority('event_edit')" autocomplete="off" class="event-form">
-								<div class="form-group row">
-									<label class="col-sm-3 form-control-label" for="name">Event name:</label>
-									<div class="col-sm-8">
-										<input type="text" class="form-control" name="name" id="name"/>
+								<div class="left-part">
+									<div class="form-group row">
+										<label class="form-control-label" for="name">Name:</label>
+										<div class="input-container">
+											<input type="text" class="form-control" name="name" id="name"/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="form-control-label" for="description">Description:</label>
+										<div class="input-container">
+											<input type="text" class="form-control" name="description" id="description"/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="form-control-label" for="start-date">Start date:</label>
+										<div class="date-container">
+											<input type="text" class="form-control date" name="start-date" id="start-date"/>
+										</div>
+										<div class="time-container">
+											<select id="start-time" name="start-time" class="time form-control select select-primary select-block"></select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="form-control-label" for="end-date">Finish date:</label>
+										<div class="date-container">
+											<input type="text" class="form-control date" name="end-date" id="end-date"/>
+										</div>
+										<div class="time-container">
+											<select id="end-time" name="end-time" class="time form-control select select-primary select-block"></select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="form-control-label">User:</label>
+										<div class="input-container">
+											<select id="user" name="user" multiple="multiple" class="form-control multiselect multiselect-primary select-primary">
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="form-control-label">Recording:</label>
+										<div class="input-container checkbox-container">
+											<label class="checkbox" for="recording">
+												<input type="checkbox" name="recording" id="recording"/>
+											</label>
+										</div>
 									</div>
 								</div>
-								<div class="form-group row">
-									<label class="col-sm-3 form-control-label" for="start-date">Start date:</label>
-									<div class="col-md-4">
-										<input type="text" class="form-control date" name="start-date" id="start-date"/>
+								<div class="right-part hidden-part">
+									<div class="form-group row">
+										<label class="form-control-label" for="location">Location:</label>
+										<div  class="input-container">
+											<select id="location" name="location" class="form-control select select-primary select-block required">
+											</select>
+										</div>
 									</div>
-									<div class="col-md-4">
-										<select id="start-time" name="start-time" class="time form-control select select-primary select-block"></select>
-									</div>
-								</div>
-								<div class="form-group row">
-									<label class="col-sm-3 form-control-label" for="end-date">Finish date:</label>
-									<div class="col-md-4">
-										<input type="text" class="form-control date" name="end-date" id="end-date"/>
-									</div>
-									<div class="col-md-4">
-										<select id="end-time" name="end-time" class="time form-control select select-primary select-block"></select>
-									</div>
-								</div>
-								<div class="form-group row">
-									<label class="col-sm-3 form-control-label" for="location">Location:</label>
-									<div class="col-sm-8">
-										<select id="location" name="location" class="form-control select select-primary select-block required">
-											<!--<option value="0">Location</option>-->
-											<!--<option value="1">Location1</option>-->
-											<!--<option value="2">Location2</option>-->
-											<!--<option value="3">Location3</option>-->
-											<!--<option value="4">Location4</option>-->
-										</select>
-									</div>
-								</div>
-								<div class="form-group row">
-									<label class="col-sm-3 form-control-label">User:</label>
-									<div class="col-sm-8">
-										<select id="user" name="user" multiple="multiple" class="form-control multiselect multiselect-primary select-primary">
-											<!--<option value="0">Yevhen</option>-->
-											<!--<option value="1">Yevhen1</option>-->
-											<!--<option value="2">Yevhen2</option>-->
-											<!--<option value="3">Yevhen3</option>-->
-											<!--<option value="4">Yevhen4</option>-->
-										</select>
-									</div>
-								</div>
-								<div class="form-group row">
-									<label class="col-sm-3 form-control-label">Equipment:</label>
-									<div class="col-sm-8">
-										<select id="equipment" name="equipment" multiple="multiple" class="form-control multiselect multiselect-primary select-primary">
-											<!--<option value="0">Equipment</option>-->
-											<!--<option value="1">Equipment1</option>-->
-											<!--<option value="2">Equipmen213t2</option>-->
-											<!--<option value="3">Equipmen12t3</option>-->
-											<!--<option value="4">Equipment4</option>-->
-										</select>
+									<div class="form-group row">
+										<label class="form-control-label">Equipment:</label>
+										<div class="input-container">
+											<select id="equipment2" name="equipment2" multiple="multiple" class="form-control multiselect multiselect-primary select-primary">
+											</select>
+										</div>
 									</div>
 								</div>
 							</form>
@@ -187,6 +190,7 @@
 		<script th:src="@{/js/lib/bootstrap.js}" src="../static/js/lib/bootstrap.js"></script>
 		<script th:src="@{/js/lib/flat-ui.js}" src="../static/js/lib/flat-ui.js"></script>
 		<script th:src="@{/js/lib/select2.full.js}" src="../static/js/lib/select2.full.js"></script>
+		<script th:src="@{/js/lib/radiocheck.js}" src="../static/js/lib/radiocheck.js"></script>
 		<script th:src="@{/js/lib/bootbox.js}" src="../static/js/lib/bootbox.js"></script>
 		<script th:src="@{/js/lib/toastr.min.js}" src="../static/js/lib/toastr.min.js}"></script>
 		<script th:src="@{/js/common.js}" src="../static/js/common.js"></script>

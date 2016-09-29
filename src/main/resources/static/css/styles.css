@@ -198,8 +198,60 @@ a .fa-lg {
 
 }
 
-.event-form {
-    width:615px;
+.modal .modal-dialog {
+    width:550px;
+}
+
+.left-part {
+    width:500px;
+    display: inline-block;
+}
+
+.right-part {
+    width:500px;
+    display: inline-block;
+    position:absolute;
+}
+
+.hidden-part {
+    display:none;
+}
+
+.left-part .form-control-label, .right-part .form-control-label {
+    width: 100px;
+    margin: 10px;
+}
+
+.date-container {
+    width:150px;
+    display: inline-block;
+}
+
+.time-container {
+    width:100px;
+    display: inline-block;
+}
+
+.input-container {
+    width:300px;
+    display: inline-block;
+}
+
+.input-container .checkbox {
+    min-height:0;
+    margin:0;
+    position:absolute;
+    top:0;
+}
+
+.checkbox-container {
+    position:relative;
+    height: 15px;
+}
+
+.modal-body .row {
+    margin:0;
+    padding:0;
 }
 
 .popover {

@@ -826,6 +826,29 @@ $(document).ready(function() {
     });
 
     $("select").select2({ dropdownCssClass : 'dropdown' });
+    $("#recording").radiocheck();
+
+    $("#recording").on('change.radiocheck', function(){
+        console.log('change')
+        if($(this).prop('checked')){
+            $('.modal .modal-dialog').animate(
+            { width:'1100px' },
+            {
+                duration: 200,
+                complete:function(){
+                    $('.right-part').removeClass('hidden-part');
+                }
+            });
+        } else {
+            $('.right-part').addClass('hidden-part');
+            $('.modal .modal-dialog').animate(
+            { width:'550px' },
+            {
+                duration: 200,
+            });
+        }
+    });
+
 
     (function connect() {
         var socket = new SockJS('/websocket');
