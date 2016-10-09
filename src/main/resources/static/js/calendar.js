@@ -101,6 +101,7 @@ $(document).ready(function() {
     })();
 
     $('#save').on('click', function(){
+        toastr.clear();
         $(".modal-edit .modal-body form").submit();
 		wasModalSubmitted = true;
     });
@@ -343,13 +344,6 @@ $(document).ready(function() {
             var option = $('<option>');
             for(var i=0;i<entities.length;i++) {
                 $input.append(option.clone().val(entities[i]).html(entities[i]))
-            }
-            if(busyEntities){
-                var optgroup = $('<optgroup>').attr('label', 'busy');
-                for(i=0;i<busyEntities.length;i++) {
-                    optgroup.append(option.clone().val(busyEntities[i]).html(busyEntities[i]))
-                }
-                $input.append(optgroup);
             }
             $input.val('').addClass('multiselect-primary').removeClass('multiselect-default');
         }
@@ -895,6 +889,8 @@ $(document).ready(function() {
 
 	$(".modal-edit .modal-body form").validate({
         ignore: [],
+        onkeyup: false,
+        onfocusout: false,
 		rules: {
 			'name': "required",
 			'start-date': "required",
