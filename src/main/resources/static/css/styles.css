@@ -211,13 +211,14 @@ a .fa-lg {
 .left-part {
     width:411px;
     display: inline-block;
+    position:absolute;
 }
 
 .right-part {
-    padding-left: 15px;
+    padding-left: 15px;/*15 + 411*/
+    margin-left: 411px;/*15 + 411*/
     width:420px;
     display: inline-block;
-    position:absolute;
 }
 
 .hidden-part {
@@ -387,7 +388,7 @@ span.color {
 }
 
 .modal .modal-title {
-    line-height: 0.7;
+    line-height: 0.9;
 }
 
 .modal .modal-header {
@@ -396,7 +397,7 @@ span.color {
 
 .modal .modal-footer {
     border-top:0;
-    padding: 19px 15px 15px 15px;
+    padding: 1px 15px 15px 15px;
 }
 
 .modal .modal-footer .btn{
@@ -715,6 +716,8 @@ label.error {
 
 .modal-body {
     padding-bottom: 0;
+    min-height: 324px;
+    box-sizing: content-box;
 }
 
 .select2-container-multi.multiselect .select2-search-choice.busy-select-item {
