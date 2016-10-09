@@ -1053,7 +1053,7 @@ $(document).ready(function() {
             });
             stompClient.subscribe('/event/delete', function (message) {
                 var deletedEvent = JSON.parse(message.body);
-                $('#calendar').fullCalendar('removeEvents', splitEquipment(deletedEvent.id));
+                $('#calendar').fullCalendar('removeEvents', deletedEvent.id);
             });
         });
     })();
