@@ -58,24 +58,39 @@
 			<div class="col-xs-12">
 				<div class="date"><strong></strong></div>
 			</div>
+			<div class="col-xs-12 description-container">
+				<div><strong>Description: </strong><span class="description"></span></div>
+			</div>
 			<div class="col-xs-12">
 				<div><strong>Author:</strong><span class="author"></span></div>
 			</div>
 			<div class="col-xs-12">
 				<div><strong>Created:</strong><span class="created"></span></div>
 			</div>
-			<div class="col-xs-12">
+			<div class="col-xs-12 location-container">
 				<div><strong>Location:</strong><span class="location"></span></div>
 			</div>
 			<div class="col-xs-12">
 				<div><strong>Users:</strong><ul class="users"></ul></div>
 			</div>
-			<div class="col-xs-12">
-				<div><strong>Equipment:</strong><ul class="equipment"></ul></div>
+			<div class="col-xs-12 camera-container">
+				<div><strong>Camera:</strong><ul class="camera"></ul></div>
+			</div>
+			<div class="col-xs-12 lens-container">
+				<div><strong>Lens:</strong><ul class="lens"></ul></div>
+			</div>
+			<div class="col-xs-12 light-container">
+				<div><strong>Light:</strong><ul class="light"></ul></div>
+			</div>
+			<div class="col-xs-12 sound-container">
+				<div><strong>Sound:</strong><ul class="sound"></ul></div>
+			</div>
+			<div class="col-xs-12 accessory-container">
+				<div><strong>Accessory:</strong><ul class="accessory"></ul></div>
 			</div>
 			<button type="button" class="btn btn-primary history"><i class="fa fa-history"></i>history</button>
 			<button type="button" class="btn btn-primary editing"><i class="fa fa-pencil-square-o"></i>edit</button>
-			<button type="button" class="btn btn-primary delete"><i class="fa fa-trash-o "></i>delete</button>
+			<button type="button" class="btn btn-danger delete"><i class="fa fa-trash-o "></i>delete</button>
 		</div>
 
 		<div class="modal modal-edit fade" tabindex="-1" role="dialog">
@@ -139,15 +154,37 @@
 									<div class="form-group row">
 										<label class="form-control-label" for="location">Location:</label>
 										<div  class="input-container">
-											<select id="location" name="location" class="form-control select select-primary select-block required">
-											</select>
+											<select id="location" name="location" class="form-control select select-primary select-block"></select>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="form-control-label">Equipment:</label>
+										<label class="form-control-label">Camera:</label>
 										<div class="input-container">
-											<select id="equipment2" name="equipment2" multiple="multiple" class="form-control multiselect multiselect-primary select-primary">
-											</select>
+											<select id="camera" name="camera" multiple="multiple" class="form-control multiselect multiselect-primary select-primary"></select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="form-control-label">Lens:</label>
+										<div class="input-container">
+											<select id="lens" name="lens" multiple="multiple" class="form-control multiselect multiselect-primary select-primary"></select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="form-control-label">Light:</label>
+										<div class="input-container">
+											<select id="light" name="light" multiple="multiple" class="form-control multiselect multiselect-primary select-primary"></select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="form-control-label">Sound:</label>
+										<div class="input-container">
+											<select id="sound" name="sound" multiple="multiple" class="form-control multiselect multiselect-primary select-primary"></select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="form-control-label">Accessory:</label>
+										<div class="input-container">
+											<select id="accessory" name="accessory" multiple="multiple" class="form-control multiselect multiselect-primary select-primary"></select>
 										</div>
 									</div>
 								</div>

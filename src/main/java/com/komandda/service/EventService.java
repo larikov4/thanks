@@ -96,6 +96,7 @@ public class EventService {
     private void sendCreationEventEmail(Event event) {
         StringBuilder eventBuilder = new StringBuilder();
         eventBuilder.append("Title ").append(event.getTitle()).append(System.lineSeparator())
+                .append("Description ").append(event.getDescription()).append(System.lineSeparator())
                 .append("Date ").append(format(event.getStart())).append(" to ").append(format(event.getEnd())).append(System.lineSeparator())
                 .append("Author ").append(event.getAuthor().getUsername()).append(System.lineSeparator())
                 .append("Location ").append(event.getLocation().getName()).append(System.lineSeparator());
@@ -132,6 +133,13 @@ public class EventService {
                 .append(prevEvent.getTitle()).append(System.lineSeparator())
                 .append("\tto ")
                 .append(currentEvent.getTitle()).append(System.lineSeparator());
+        }
+        if (!prevEvent.getDescription().equals(currentEvent.getDescription())) {
+            diff.append("Description changed").append(System.lineSeparator())
+                    .append("\tfrom ")
+                    .append(prevEvent.getDescription()).append(System.lineSeparator())
+                    .append("\tto ")
+                    .append(currentEvent.getDescription()).append(System.lineSeparator());
         }
         if (!prevEvent.getStart().equals(currentEvent.getStart())) {
             diff.append("Event start changed").append(System.lineSeparator())

@@ -22,6 +22,8 @@ public class Event {
 
     private String title;
 
+    private String description;
+
     private Date start;
 
     private Date end;
@@ -56,7 +58,15 @@ public class Event {
         this.title = title;
     }
 
-//    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm", timezone = "Europe/Kiev")
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    //    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm", timezone = "Europe/Kiev")
     @JsonDeserialize(using = DateWithoutTimeZoneJsonDeserializer.class)
     @JsonSerialize(using = DateWithoutTimeZoneJsonSerializer.class)
     public Date getStart() {

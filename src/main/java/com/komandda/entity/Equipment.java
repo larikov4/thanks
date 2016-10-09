@@ -15,7 +15,7 @@ public class Equipment {
 
     private String name;
 
-    private String type;
+    private EquipmentType type;
 
     public String getId() {
         return id;
@@ -33,11 +33,11 @@ public class Equipment {
         this.name = name;
     }
 
-    public String getType() {
+    public EquipmentType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(EquipmentType type) {
         this.type = type;
     }
 

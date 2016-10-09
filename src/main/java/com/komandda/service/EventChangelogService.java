@@ -40,6 +40,10 @@ public class EventChangelogService {
             diff.setTitle(currentEvent.getTitle());
             wasModified = true;
         }
+        if (prevEvent.getDescription() != null && !prevEvent.getDescription().equals(currentEvent.getDescription())) {
+            diff.setTitle(currentEvent.getDescription());
+            wasModified = true;
+        }
         if (!prevEvent.getStart().equals(currentEvent.getStart())) {
             diff.setStart(currentEvent.getStart());
             wasModified = true;
@@ -48,15 +52,15 @@ public class EventChangelogService {
             diff.setEnd(currentEvent.getEnd());
             wasModified = true;
         }
-        if (!prevEvent.getLocation().equals(currentEvent.getLocation())) {
+        if (prevEvent.getLocation() != null && !prevEvent.getLocation().equals(currentEvent.getLocation())) {
             diff.setLocation(currentEvent.getLocation());
             wasModified = true;
         }
-        if (!prevEvent.getUsers().equals(currentEvent.getUsers())) {
+        if (prevEvent.getUsers() != null && !prevEvent.getUsers().equals(currentEvent.getUsers())) {
             diff.setUsers(currentEvent.getUsers());
             wasModified = true;
         }
-        if (!prevEvent.getEquipment().equals(currentEvent.getEquipment())) {
+        if (prevEvent.getEquipment() != null && !prevEvent.getEquipment().equals(currentEvent.getEquipment())) {
             diff.setEquipment(currentEvent.getEquipment());
             wasModified = true;
         }

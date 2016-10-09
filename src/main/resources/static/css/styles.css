@@ -265,7 +265,7 @@ a .fa-lg {
 }
 
 .popover-content {
-    padding: 5px 0;
+    padding: 15px 0;
 }
 
 .popover-content > div {
@@ -301,12 +301,16 @@ a .fa-lg {
 }
 
 .popover-content ul {
-    margin-left: 5px;
-
+    margin-left: 18px;
 }
 
 .popover-content li {
-    list-style:square inside;
+    list-style:square outside;
+    text-indent: -5px;
+}
+
+.popover-content .col-xs-12 span {
+    padding-left: 3px;
 }
 
 .popover-content button{
@@ -324,7 +328,7 @@ a .fa-lg {
 }
 
 .popover-content button.delete{
-    margin: 15px 0 10px 80px;
+    margin: 15px 0 0 80px;
 }
 
 span.color {
@@ -725,6 +729,10 @@ label.error {
 }
 .fc-content .fc-title {
     font-size: 13px;
+}
+.fc-content .fc-description {
+    display:block;
+    font-size: 11px;
 }
 .fc-event-username {
     border-top: 1px solid #999;

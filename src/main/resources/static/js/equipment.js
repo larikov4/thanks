@@ -1,5 +1,14 @@
 var $grid = $("#jsGrid");
 var REST_URL = '/rest/' + ROOT_URL;
+EQUIPMENT = mapEquipmentType(EQUIPMENT);
+
+TYPES = [
+    {name: 'camera'},
+    {name: 'lens'},
+    {name: 'sound'},
+    {name: 'light'},
+    {name: 'accessory'}
+]
 
 $grid.jsGrid({
     width: "100%",
@@ -48,10 +57,16 @@ $grid.jsGrid({
     fields: [
         { name: "name", type: "text", width: 150, validate: "required" },
         //{ name: "color", type: "select", width: 50, items: COLORS, valueField: "hex", textField: "name", validate: "required" },
-        { name: "type", type: "select", width: 50, items: ['camera', 'lens', 'sound', 'light', 'accessories'], validate: "required" },
+        { name: "type", type: "select", width: 50, items: TYPES, valueField: "name", textField: "name", validate: "required" },
         IS_EDITABLE ? { type: "control", width: 15, deleteButton: false }:''
     ]
 });
+function mapEquipmentType(equipment) {
+    return equipment.map(function(item){
+        item.type = item.type.$name.toLowerCase();
+        return item;
+    })
+}
 //	bootbox.confirm({
 //		size: 'small',
 //		className: 'confirmation',

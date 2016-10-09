@@ -3,11 +3,15 @@ $(document).ready(function() {
 	var repo = {
 		locations: {},
 		equipment: {},
+		camera: {},
+		lens: {},
+		light: {},
+		sound: {},
+		accessory: {},
 		users: {},
 		userIds: {},
 		colors:{
             locations: {},
-            equipment: {},
             users: {}
 		},
         free:{},
@@ -20,14 +24,37 @@ $(document).ready(function() {
 	var REST_URL = "/rest/events";
 	var wasModalSubmitted = false;
 
+    function mapEquipmentType(equipment) {
+        return equipment.map(function(item){
+            item.type = item.type.$name.toLowerCase();
+            return item;
+        })
+    }
+
 	(function initEntities(){
 		for(var i=0;i<LOCATIONS.length;i++) {
 			repo.locations[LOCATIONS[i].name] = LOCATIONS[i].id;
 			repo.colors.locations[LOCATIONS[i].name] = LOCATIONS[i].color;
 		}
+
+        EQUIPMENT = mapEquipmentType(EQUIPMENT);
 		for(var i=0;i<EQUIPMENT.length;i++) {
 			repo.equipment[EQUIPMENT[i].name] = EQUIPMENT[i].id;
-			repo.colors.equipment[EQUIPMENT[i].name] = EQUIPMENT[i].color;
+			if(EQUIPMENT[i].type==='camera'){
+			    repo.camera[EQUIPMENT[i].name] = EQUIPMENT[i].id;
+			}
+            if(EQUIPMENT[i].type==='lens'){
+                repo.lens[EQUIPMENT[i].name] = EQUIPMENT[i].id;
+            }
+            if(EQUIPMENT[i].type==='light'){
+                repo.light[EQUIPMENT[i].name] = EQUIPMENT[i].id;
+            }
+            if(EQUIPMENT[i].type==='sound'){
+                repo.sound[EQUIPMENT[i].name] = EQUIPMENT[i].id;
+            }
+            if(EQUIPMENT[i].type==='accessory'){
+                repo.accessory[EQUIPMENT[i].name] = EQUIPMENT[i].id;
+            }
 		}
 		for(var i=0;i<USERS.length;i++) {
 		    repo.users[USERS[i].username] = USERS[i];
@@ -82,13 +109,9 @@ $(document).ready(function() {
         var data = {};
         var $container = $('.modal-edit');
         data.title = $container.find('#name').val();
+        data.description = $container.find('#description').val();
         data.start = $container.find('#start-date').val() + "T" + $('#start-time').val();
         data.end = $container.find('#end-date').val() + "T" + $container.find('#end-time').val();
-        var locationName = $container.find('#location').val();
-        data.location = {
-            id: repo.locations[locationName],
-            name: locationName
-        };
         data.users = $container.find('#user').val().map(function(username){
             return {
                 id:repo.userIds[username],
@@ -96,15 +119,39 @@ $(document).ready(function() {
                 email:repo.users[username].email
             };
         });
-        if($container.find('#equipment').val()) {
-            data.equipment = $container.find('#equipment').val().map(function(name){
-                return {
-                    id:repo.equipment[name],
-                    name:name
-                };
-            });
+        if($("#recording").prop('checked')) {
+            fetchLocationAndEquipment($container, data);
         }
         return data;
+    }
+
+    function fetchLocationAndEquipment($container, data){
+        var locationName = $container.find('#location').val();
+        data.location = {
+            id: repo.locations[locationName],
+            name: locationName
+        };
+
+        data.equipment = fetchEquipmentByType('camera', [], $container);
+        data.equipment = fetchEquipmentByType('lens', data.equipment, $container);
+        data.equipment = fetchEquipmentByType('sound', data.equipment, $container);
+        data.equipment = fetchEquipmentByType('light', data.equipment, $container);
+        data.equipment = fetchEquipmentByType('accessory', data.equipment, $container);
+        return data;
+    }
+
+    function fetchEquipmentByType(type, equipment, $container){
+        if($container.find('#' + type ).val()) {
+            currentTypeEquipment = $container.find('#' + type).val().map(function(name){
+                return {
+                    id:repo.equipment[name],
+                    name:name,
+                    type: type
+                };
+            });
+            return equipment.concat(currentTypeEquipment);
+        }
+        return equipment;
     }
 
     $('.date, .time').on('change', function(){
@@ -128,7 +175,7 @@ $(document).ready(function() {
 				url: "/rest/locations/free",
 				data:data,
 				success: function(data){
-					if(!mapNames(data).contains(event.location.name)){
+					if(event.location && !mapNames(data).contains(event.location.name)){
 						isBusy = true;
 						toastr["warning"](event.location.name + " is busy");
 					}
@@ -139,7 +186,7 @@ $(document).ready(function() {
 				url: "/rest/equipment/free",
 				data:data,
 				success: function(data){
-					var busy = filterBusy(mapNames(event.equipment), mapNames(data));
+					var busy = filterBusy(mapNames(fetchGroupedEquipment(event)), mapNames(data));
 					if(busy.length > 0) {
 						isBusy = true;
 						toastr["warning"](busy.toString() + " is busy");
@@ -167,8 +214,17 @@ $(document).ready(function() {
 		});
 	}
 
+    function toggleRecordingCheckbox(checked) {
+        if(checked) {
+            $("#recording").prop("checked", true);
+        } else {
+            $("#recording").prop("checked", false);
+        }
+    }
+
 	function fillSelects(){
 		var ajaxCounter = 0;
+	    toggleRecordingCheckbox(currentEvent && currentEvent.location);
 		$.ajax({
 			type: "GET",
 			url: "/rest/locations/free",
@@ -185,7 +241,7 @@ $(document).ready(function() {
 				if(prev){
 					$select.val(prev);
 				}
-				if(currentEvent){
+				if(currentEvent && currentEvent.location){
 					$select.select2('val', currentEvent.location.name);
 				}
 				if(wasModalSubmitted && ajaxCounter % 3 === 0){
@@ -208,21 +264,27 @@ $(document).ready(function() {
 			},
 			success: function(data){
 				ajaxCounter++;
-				var $select = $('.modal-edit').find('#equipment');
-				var prev = $select.val();
-				prepareSelect(data, 'name', Object.keys(repo.equipment), 'equipment');
-				if(prev){
-					$select.val(prev);
+				prepareEquipment('camera');
+				prepareEquipment('lens');
+				prepareEquipment('light');
+				prepareEquipment('sound');
+				prepareEquipment('accessory');
+				function prepareEquipment(type) {
+                    var $select = $('.modal-edit').find('#' + type);
+                    var prev = $select.val();
+                    var equipmentContainer = { equipment : data };
+                    prepareSelect(splitEquipment(equipmentContainer)[type], 'name', Object.keys(repo[type]), type);
+                    if(prev){
+                        $select.val(prev);
+                    }
+                    if(currentEvent) {
+                        $select.select2('val', mapNames(currentEvent[type]));
+                    }
 				}
-				if(currentEvent) {
-					$select.select2('val', currentEvent.equipment.map(function (equipment) {
-						return equipment.name
-					}));
-				}
-				if(wasModalSubmitted && ajaxCounter % 3 === 0){
-					$(".modal-edit .modal-body form").valid();
-					ajaxCounter=0;
-				}
+                if(wasModalSubmitted && ajaxCounter % 3 === 0){
+                    $(".modal-edit .modal-body form").valid();
+                    ajaxCounter=0;
+                }
 			},
 			fail:function(){
 				toastr["error"]("Server error #2. Please refresh the page.");
@@ -260,30 +322,6 @@ $(document).ready(function() {
 			}
 		});
 
-		function getFreeArray(data, property){
-			var freeArray = [];
-			for(var i=0;i<data.length;i++) {
-				freeArray.push(data[i][property]);
-			}
-			return freeArray;
-		}
-
-        function fillSelect($input, entities, busyEntities) {
-            $input.empty();
-            var option = $('<option>');
-            for(var i=0;i<entities.length;i++) {
-                $input.append(option.clone().val(entities[i]).html(entities[i]))
-            }
-			if(busyEntities){
-				var optgroup = $('<optgroup>').attr('label', 'busy');
-				for(i=0;i<busyEntities.length;i++) {
-					optgroup.append(option.clone().val(busyEntities[i]).html(busyEntities[i]))
-				}
-				$input.append(optgroup);
-			}
-			$input.val('').addClass('multiselect-primary').removeClass('multiselect-default');
-        }
-
 		function prepareSelect(data, property, entities, entityName){
 			repo.free[entityName] = getFreeArray(data, property);
 			repo.busy[entityName] = filterBusy(entities, repo.free[entityName]);
@@ -291,10 +329,35 @@ $(document).ready(function() {
 			fillSelect($input, repo.free[entityName], repo.busy[entityName]);
 			$input.prop( "disabled", false );
 		}
+
+        function getFreeArray(data, property){
+            var freeArray = [];
+            for(var i=0;i<data.length;i++) {
+                freeArray.push(data[i][property]);
+            }
+            return freeArray;
+        }
+
+        function fillSelect($input, entities, busyEntities) {
+            $input.empty();
+            var option = $('<option>');
+            for(var i=0;i<entities.length;i++) {
+                $input.append(option.clone().val(entities[i]).html(entities[i]))
+            }
+            if(busyEntities){
+                var optgroup = $('<optgroup>').attr('label', 'busy');
+                for(i=0;i<busyEntities.length;i++) {
+                    optgroup.append(option.clone().val(busyEntities[i]).html(busyEntities[i]))
+                }
+                $input.append(optgroup);
+            }
+            $input.val('').addClass('multiselect-primary').removeClass('multiselect-default');
+        }
 	}
 
 	function updateEvent(event) {
 		delete event.source;
+		event = groupEquipment(event);
 		$.ajax({
 			type: "PUT",
 			url: REST_URL,
@@ -312,7 +375,10 @@ $(document).ready(function() {
 			center: 'title',
 			right: 'month,agendaWeek,agendaDay'
 		},
-		events:EVENTS,
+		events:EVENTS.map(function(event){
+            event.equipment = mapEquipmentType(event.equipment);
+		    return splitEquipment(event)
+		}),
 		editable:IS_EDITABLE,
 		defaultView:'agendaWeek',
 	 	timeFormat: 'H:mm',
@@ -325,6 +391,7 @@ $(document).ready(function() {
         height: 900,
 	 	eventClick: IS_EDITABLE? onEventClick : function(){},
 	 	eventDrop: function(event, delta, revert){
+	 	    console.log("equipmet" + event.equipment);
 			hasAnyBusyResource({
 				event:event,
 				free: updateEvent,
@@ -409,16 +476,30 @@ $(document).ready(function() {
 			if(event.isStub && !$target.find('.fc-content').hasClass('empty-field')) {
                 $target.find('.fc-content').addClass('empty-field');
 			}
-			if(view.type.contains("agend") && event.location){
-				var locationColor = repo.colors.locations[event.location.name];
-				$target.find('.fc-title').css('background-color', locationColor);
-
+			if(view.type.contains("agend") && !event.isStub){
+			    if(event.description) {
+			        var descriptionElement = $("<span>")
+			            .addClass('fc-description')
+			            .text(event.description);
+			        $target.find('.fc-title').append(descriptionElement);
+			    }
+			    if(event.location) {
+                    var locationColor = repo.colors.locations[event.location.name];
+                    $target.find('.fc-title').css('background-color', locationColor);
+			    }
 				var $container = $('<div>').addClass('equipment-container');
 				var $element = $('<div>');
-				for(var i=0;event.equipment && i<event.equipment.length;i++){
-					$container.append($element.clone().text(event.equipment[i].name + "")
-						//.css('color', repo.colors.equipment[event.equipment[i].name])
-					);
+				appendEquipment('camera');
+				appendEquipment('lens');
+				appendEquipment('light');
+				appendEquipment('sound');
+				appendEquipment('accessory');
+				function appendEquipment(type) {
+                    for(var i=0;event[type] && i<event[type].length;i++){
+                        $container.append($element.clone().text(event[type][i].name + "")
+                            //.css('color', repo.colors.equipment[event.equipment[i].name])
+                        );
+                    }
 				}
 				$target.append($container);
 
@@ -455,11 +536,23 @@ $(document).ready(function() {
 							$('.popover').popover('hide');
 							$container = $('#popover-container');
 							$container.find('.date').empty();
+							$container.find('.description').empty();
 							$container.find('.author').empty();
 							$container.find('.created').empty();
 							$container.find('.location').empty();
 							$container.find('.users').empty();
-							$container.find('.equipment').empty();
+							$container.find('.camera').empty();
+							$container.find('.lens').empty();
+							$container.find('.sound').empty();
+							$container.find('.light').empty();
+							$container.find('.accessory').empty();
+							$container.find('.description-container').hide();
+							$container.find('.location-container').hide();
+							$container.find('.camera-container').hide();
+							$container.find('.lens-container').hide();
+							$container.find('.sound-container').hide();
+							$container.find('.light-container').hide();
+							$container.find('.accessory-container').hide();
 							$('body').off('click', '.editing');
 						}
 
@@ -472,20 +565,38 @@ $(document).ready(function() {
 								return event.start.format('YYYY-MM-DD HH:mm') + " - " + event.end.format('YYYY-MM-DD HH:mm');
 							}
 							$popover.find('.date').text(formatDuration(event));
+							if(event.description) {
+							    $popover.find('.description-container').show();
+							    $popover.find('.description').text(event.description);
+                            }
 							$popover.find('.author').text(event.author.username);
-							console.log(event)
                             $popover.find('.created').text(moment(event.created).format('YYYY-MM-DD HH:mm'));
-							$popover.find('.location').text(event.location.name);
+							if(event.location) {
+							    $popover.find('.location-container').show();
+							    $popover.find('.location').text(event.location.name);
+							    showFormRightPart();
+							} else {
+							    hideFormRightPart();
+							}
 							var $li = $('<li>');
 							var usersContainer = $popover.find('.users');
 							event.users.forEach(function(user) {usersContainer.append($li.clone().text(user.username))});
-							var equipmentContainer = $popover.find('.equipment');
-							if(event.equipment) {
-							    event.equipment.forEach(function(equipment) {equipmentContainer.append($li.clone().text(equipment.name))});
+                            appendEquipment('camera');
+                            appendEquipment('lens');
+                            appendEquipment('light');
+                            appendEquipment('sound');
+                            appendEquipment('accessory');
+							function appendEquipment(type) {
+                                if(event[type].length > 0) {
+                                    $popover.find('.' + type + '-container').show();
+                                    var equipmentContainer = $popover.find('.' + type);
+                                    event[type].forEach(function(equipment) {equipmentContainer.append($li.clone().text(equipment.name))});
+                                }
 							}
 							$('body').on('click', '.editing', function() {
 								var $modal = $('.modal-edit');
 								$modal.find('#name').val(event.title);
+								$modal.find('#description').val(event.description);
 								$modal.find('#start-date').val(event.start.format('YYYY-MM-DD'));
 								$modal.find('#start-time').select2('val', event.start.hour() + ":" + padZero(event.start.minute()));
 								$modal.find('#end-date').val(event.end.format('YYYY-MM-DD'));
@@ -538,6 +649,7 @@ $(document).ready(function() {
 			});
 		} else {
 			event.author = currentEvent.author;
+			event.created = currentEvent.created;
 			event.id = currentEvent.id;
 			$.ajax({
 				type: "PUT",
@@ -603,6 +715,7 @@ $(document).ready(function() {
 
 	$('.modal-edit').on('hidden.bs.modal', function () {
 		clearPopup();
+		hideFormRightPart();
 		currentEvent = null;
 		wasModalSubmitted = false;
 	});
@@ -610,6 +723,7 @@ $(document).ready(function() {
 	function clearPopup() {
 		var $container = $('.modal-edit');
 		$container.find('#name').val('');
+		$container.find('#description').val('');
 		$container.find('#start-date').val('');
 		$container.find('#start-time').val('0:00').trigger('change');
 		$container.find('#end-date').val('');
@@ -620,7 +734,11 @@ $(document).ready(function() {
 		$container.find('#location').select2();
 
 		$container.find('#user').select2('val', '');
-		$container.find('#equipment').select2('val', '');
+		$container.find('#camera').select2('val', '');
+		$container.find('#lens').select2('val', '');
+		$container.find('#sound').select2('val', '');
+		$container.find('#light').select2('val', '');
+		$container.find('#accessory').select2('val', '');
 		$("form").validate().resetForm();
 
 		disableForm();
@@ -637,14 +755,22 @@ $(document).ready(function() {
 	function disableForm(){
 		$('#location').prop( "disabled", true );
 		$('#user').prop( "disabled", true ).removeClass('multiselect-primary').addClass('multiselect-default');
-		$('#equipment').prop( "disabled", true ).removeClass('multiselect-primary').addClass('multiselect-default');
+		$('#camera').prop( "disabled", true ).removeClass('multiselect-primary').addClass('multiselect-default');
+		$('#lens').prop( "disabled", true ).removeClass('multiselect-primary').addClass('multiselect-default');
+		$('#light').prop( "disabled", true ).removeClass('multiselect-primary').addClass('multiselect-default');
+		$('#sound').prop( "disabled", true ).removeClass('multiselect-primary').addClass('multiselect-default');
+		$('#accessory').prop( "disabled", true ).removeClass('multiselect-primary').addClass('multiselect-default');
 	}
 	disableForm();
 
 	function enableForm(){
 		$('#location').prop( "disabled", false );
 		$('#user').prop( "disabled", false );
-		$('#equipment').prop( "disabled", false );
+		$('#camera').prop( "disabled", false );
+		$('#lens').prop( "disabled", false );
+		$('#light').prop( "disabled", false );
+		$('#sound').prop( "disabled", false );
+		$('#accessory').prop( "disabled", false );
 	}
 
 	function padZero(number) {
@@ -738,13 +864,13 @@ $(document).ready(function() {
 
         $.validator.addMethod(
             "isFreeEquipment",
-            function(value, element){
+            function(value, element, equipmentType){
 				var $element = $(element);
 				var values = $element.val();
 				var busy = [];
 				if(values) {
 					busy = values.filter(function(value){
-						return repo.busy.equipment.contains(value);
+						return repo.busy[equipmentType].contains(value);
 					});
 					$element.siblings('.select2-container').find('.select2-search-choice').each(function(){
 						var $this = $(this);
@@ -770,7 +896,7 @@ $(document).ready(function() {
 	$(".modal-edit .modal-body form").validate({
         ignore: [],
 		rules: {
-			name: "required",
+			'name': "required",
 			'start-date': "required",
 			'end-date': {
 				required:true,
@@ -780,20 +906,31 @@ $(document).ready(function() {
                 isDurationMoreThanOrEqualsOneHour:'start-time'
             },
 			location: {
-                required:true,
                 isFreeLocation:true
             },
 			user: {
                 required:true,
                 isFreeUser:true
             },
-			equipment: {
-                isFreeEquipment:true
+			camera: {
+                isFreeEquipment:'camera'
+            },
+			lens: {
+                isFreeEquipment:'lens'
+            },
+			light: {
+                isFreeEquipment:'light'
+            },
+			sound: {
+                isFreeEquipment:'sound'
+            },
+			accessory: {
+                isFreeEquipment:'accessory'
             }
 		},
 
 		messages: {
-			name: "Please enter event's name",
+			'name': "Please enter event's name",
 			'start-date': {
 				required:"Please enter event's start date"
 			},
@@ -808,7 +945,13 @@ $(document).ready(function() {
 				required:"Please enter at least one user"
 			}
 		},
-
+        errorPlacement: function(error, element) {
+            toastr["warning"](error);
+        },
+        showError: function(a1, a2){
+            console.log(a1, a2)
+        },
+//        debug:true,
 		submitHandler: function(form) {
 			onSubmit();
 		}
@@ -829,26 +972,74 @@ $(document).ready(function() {
     $("#recording").radiocheck();
 
     $("#recording").on('change.radiocheck', function(){
-        console.log('change')
         if($(this).prop('checked')){
-            $('.modal .modal-dialog').animate(
+            showFormRightPart();
+        } else {
+            hideFormRightPart();
+        }
+    });
+
+    function showFormRightPart() {
+        $('.modal .modal-dialog').animate(
             { width:'1100px' },
             {
                 duration: 200,
                 complete:function(){
                     $('.right-part').removeClass('hidden-part');
                 }
-            });
-        } else {
-            $('.right-part').addClass('hidden-part');
-            $('.modal .modal-dialog').animate(
+            }
+        );
+        $("#location").rules("add", "required");
+    }
+
+    function hideFormRightPart() {
+        $('.right-part').addClass('hidden-part');
+        $('.modal .modal-dialog').animate(
             { width:'550px' },
             {
                 duration: 200,
-            });
-        }
-    });
+            }
+        );
+        $("#location").rules("remove", "required");
+    }
 
+    function splitEquipment(event) {
+        var equipment = event.equipment;
+        delete event.equipment;
+        event.camera = filterByType('camera');
+        event.lens = filterByType('lens');
+        event.light = filterByType('light');
+        event.sound = filterByType('sound');
+        event.accessory = filterByType('accessory');
+
+        function filterByType(type){
+            return equipment.filter(function(item){return item.type === type;})
+        }
+
+        return event;
+    }
+
+    function groupEquipment(event) {
+        event.equipment = fetchGroupedEquipment(event);
+        delete event.camera;
+        delete event.lens;
+        delete event.light;
+        delete event.sound;
+        delete event.accessory;
+        return event;
+    }
+
+    function fetchGroupedEquipment(event) {
+        return event.camera
+            .concat(event.lens)
+            .concat(event.light)
+            .concat(event.sound)
+            .concat(event.accessory)
+            .map(function(item){
+                item.type = item.type.toLowerCase();
+                return item;
+            });
+    }
 
     (function connect() {
         var socket = new SockJS('/websocket');
@@ -856,32 +1047,18 @@ $(document).ready(function() {
         stompClient.connect({}, function (frame) {
             stompClient.subscribe('/event/create', function (message) {
                 var createdEvent = JSON.parse(message.body);
-                $('#calendar').fullCalendar('renderEvent', createdEvent);
+                $('#calendar').fullCalendar('renderEvent', splitEquipment(createdEvent));
             });
             stompClient.subscribe('/event/update', function (message) {
                 var updatedEvent = JSON.parse(message.body);
                 $('#calendar').fullCalendar('removeEvents', updatedEvent.id);
-                $('#calendar').fullCalendar('renderEvent', updatedEvent);
+                $('#calendar').fullCalendar('renderEvent', splitEquipment(updatedEvent));
             });
             stompClient.subscribe('/event/delete', function (message) {
                 var deletedEvent = JSON.parse(message.body);
-                $('#calendar').fullCalendar('removeEvents', deletedEvent.id);
+                $('#calendar').fullCalendar('removeEvents', splitEquipment(deletedEvent.id));
             });
-
         });
-        function equals(localEvent, serverEvent) {
-            function mapUsername(user){return user.username;}
-            function mapEquipmentName(equipment){return equipment.name;}
-            return !!localEvent && !!serverEvent
-                && localEvent.author.username === serverEvent.author.username
-                && localEvent.created === serverEvent.created
-                && localEvent.title === serverEvent.title
-                && localEvent.start.format('YYYY-MM-DD HH:mm') === serverEvent.start.replace("T", " ")
-                && localEvent.end.format('YYYY-MM-DD HH:mm') === serverEvent.end.replace("T", " ")
-                && localEvent.location.name === serverEvent.location.name
-                && JSON.stringify(localEvent.users.map(mapUsername)) === JSON.stringify(serverEvent.users.map(mapUsername))
-                && JSON.stringify(localEvent.equipment.map(mapEquipmentName)) === JSON.stringify(serverEvent.equipment.map(mapEquipmentName));
-        }
     })();
 });
 
