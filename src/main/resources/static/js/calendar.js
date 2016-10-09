@@ -385,7 +385,6 @@ $(document).ready(function() {
         height: 900,
 	 	eventClick: IS_EDITABLE? onEventClick : function(){},
 	 	eventDrop: function(event, delta, revert){
-	 	    console.log("equipmet" + event.equipment);
 			hasAnyBusyResource({
 				event:event,
 				free: updateEvent,
@@ -393,7 +392,7 @@ $(document).ready(function() {
 			});
 	 	},
 	 	eventResize: function(event, delta, revert){
-			if(!isDurationMoreThanOrEqualsOneHour(padTime(event.start), padTime(event.end))){
+			if(!isDurationMoreThanOrEqualsOneHourByDates(event.start.toDate(), event.end.toDate())){
 				toastr["warning"]("Event's duration should be at least 1 hour");
 				revert();
 				return;
@@ -436,7 +435,7 @@ $(document).ready(function() {
 		    currentEvent = null;
 		    if(movingEvent){
                 $('#calendar').fullCalendar('removeEvents', movingEvent.id);
-		        var duration = getDurationInMinutes(padTime(movingEvent.startPoint), padTime(date));
+		        var duration = getDurationInMinutesByDates(movingEvent.startPoint.toDate(), date.toDate());
 		        if(duration>0) {
 		            movingEvent.start = movingEvent.startPoint;
                     movingEvent.end = date.add(30, 'minute');
@@ -610,7 +609,7 @@ $(document).ready(function() {
 	});
 
     $('#calendar').on('mouseup', function(){
-        if(movingEvent && isDurationMoreThanOrEqualsOneHour(padTime(movingEvent.start), padTime(movingEvent.end))){
+        if(movingEvent && isDurationMoreThanOrEqualsOneHourByDates(movingEvent.start.toDate(), movingEvent.end.toDate())){
             $('#calendar').fullCalendar('removeEvents', movingEvent.id);
             var $modal = $('.modal-edit');
             $modal.find('#start-date').val(movingEvent.start.format('YYYY-MM-DD'));
@@ -791,27 +790,33 @@ $(document).ready(function() {
         return event.keyCode != 13;
     });
 
-    function getDurationInMinutes(firstTimeStr, secondTimeStr) {
-        var duration = new Date('01/01/2011 ' + secondTimeStr).getTime() - new Date('01/01/2011 ' + firstTimeStr).getTime();
+    function getDurationInMinutesByDates(firstDate, secondDate) {
+        var duration = secondDate.getTime() - firstDate.getTime();
         return Math.floor(duration / 60000);
     }
 
-    function getDurationInHours(firstTimeStr, secondTimeStr) {
-        var duration = new Date('01/01/2011 ' + secondTimeStr).getTime() - new Date('01/01/2011 ' + firstTimeStr).getTime();
-        return Math.floor(duration / 3600000);
+    function isDurationMoreThanOrEqualsOneHourByDates(firstDate, secondDate){
+        var duration = getDurationInMinutesByDates(firstDate, secondDate);
+        return Math.floor(duration / 60) >= 1;
     }
 
-	function isDurationMoreThanOrEqualsOneHour(firstTimeStr, secondTimeStr){
-		return getDurationInHours(firstTimeStr, secondTimeStr) >= 1;
-	}
+//    function getDurationInHours(firstTimeStr, secondTimeStr) {
+//        var duration = new Date('01/01/2011 ' + secondTimeStr).getTime() - new Date('01/01/2011 ' + firstTimeStr).getTime();
+//        return Math.floor(duration / 3600000);
+//    }
+//
+//	function isDurationMoreThanOrEqualsOneHour(firstTimeStr, secondTimeStr){
+//		return getDurationInHours(firstTimeStr, secondTimeStr) >= 1;
+//	}
 
 	(function addCustomValidatorMethods(){
 
 		$.validator.addMethod(
-			"isDurationMoreThanOrEqualsOneHour",
+			"isDurationMoreThanOrEqualsOneHourByDates",
 			function (secondTimeStr, element, param){
-				var firstTimeStr = $('[name="' + param + '"]').val();
-                return isDurationMoreThanOrEqualsOneHour(firstTimeStr, secondTimeStr);
+				var startDate = $('[name="' + param[0] + '"]').val() + ' ' + $('[name="' + param[1] + '"]').val();
+				var endDate = $('[name="' + param[2] + '"]').val() + ' ' + secondTimeStr;
+                return isDurationMoreThanOrEqualsOneHourByDates(new Date(startDate), new Date(endDate));
 			},
 			"Event's duration should be at least 1 hour"
 		);
@@ -899,7 +904,7 @@ $(document).ready(function() {
 				isDateBeforeOrEquals:'start-date'
 			},
 			'end-time': {
-                isDurationMoreThanOrEqualsOneHour:'start-time'
+                isDurationMoreThanOrEqualsOneHourByDates:['start-date', 'start-time', 'end-date']
             },
 			location: {
                 isFreeLocation:true
