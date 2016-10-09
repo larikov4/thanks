@@ -47,12 +47,16 @@ input.table-input {
     margin-bottom: 20px;
 }
 
-.form-group input{
+.modal-body input{
+    margin-bottom: 0;
+}
+
+.modal-body select{
     margin-bottom: 10px;
 }
 
-.form-group select{
-    margin-bottom: 10px;
+#start-date, #end-date {
+    margin: 0 15px 15px 0;
 }
 
 #start {
@@ -197,18 +201,21 @@ a .fa-lg {
 .select2-result-label {
 
 }
-
+.modal-dialog {
+    width: 848px;
+}
 .modal .modal-dialog {
-    width:550px;
+    width:426px;
 }
 
 .left-part {
-    width:500px;
+    width:411px;
     display: inline-block;
 }
 
 .right-part {
-    width:500px;
+    padding-left: 15px;
+    width:420px;
     display: inline-block;
     position:absolute;
 }
@@ -217,9 +224,12 @@ a .fa-lg {
     display:none;
 }
 
-.left-part .form-control-label, .right-part .form-control-label {
-    width: 100px;
-    margin: 10px;
+.left-part .form-control-label {
+    width: 90px;
+}
+
+.right-part .form-control-label {
+    width: 85px;
 }
 
 .date-container {
@@ -230,11 +240,13 @@ a .fa-lg {
 .time-container {
     width:100px;
     display: inline-block;
+    margin-left: 11px;
 }
 
 .input-container {
     width:300px;
     display: inline-block;
+    margin-bottom: 15px;
 }
 
 .input-container .checkbox {
@@ -246,7 +258,7 @@ a .fa-lg {
 
 .checkbox-container {
     position:relative;
-    height: 15px;
+    height: 0;
 }
 
 .modal-body .row {
@@ -367,6 +379,28 @@ span.color {
 
 .modal .select {
     min-width:33.33333333%;
+    height: 42px;
+}
+
+.time-container #s2id_end-time{
+    margin-bottom: 0!important;
+}
+
+.modal .modal-title {
+    line-height: 0.7;
+}
+
+.modal .modal-header {
+    border-bottom:2px solid #1abc9c
+}
+
+.modal .modal-footer {
+    border-top:0;
+    padding: 19px 15px 15px 15px;
+}
+
+.modal .modal-footer .btn{
+    margin-left: 11px;
 }
 
 .datepicker.dropdown-menu {
@@ -672,10 +706,6 @@ label.error {
 }
 
 .error {
-    margin: 0;
-}
-
-#name {
     margin: 0;
 }
 

@@ -948,10 +948,6 @@ $(document).ready(function() {
         errorPlacement: function(error, element) {
             toastr["warning"](error);
         },
-        showError: function(a1, a2){
-            console.log(a1, a2)
-        },
-//        debug:true,
 		submitHandler: function(form) {
 			onSubmit();
 		}
@@ -981,7 +977,7 @@ $(document).ready(function() {
 
     function showFormRightPart() {
         $('.modal .modal-dialog').animate(
-            { width:'1100px' },
+            { width:'848px' },
             {
                 duration: 200,
                 complete:function(){
@@ -995,7 +991,7 @@ $(document).ready(function() {
     function hideFormRightPart() {
         $('.right-part').addClass('hidden-part');
         $('.modal .modal-dialog').animate(
-            { width:'550px' },
+            { width:'426px' },
             {
                 duration: 200,
             }
