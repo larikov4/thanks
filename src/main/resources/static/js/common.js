@@ -22,13 +22,20 @@ var COLORS = [
 ];
 
 (function($){
-    //open-close sidebar once burger button is clicked
+    //open-close nav-sidebar once burger button is clicked
     $('.sidebar-toggler').on('click', function () {
         var $this = $(this),
             $parent = $this.parent();
         $parent.toggleClass('hidden-sidebar');
         $this.toggleClass('active');
         $('main').toggleClass('hidden-sidebar');
+    });
+    //open-close filter-sidebar once filter button is clicked
+    $('.filter-sidebar-toggler').on('click', function () {
+        var $this = $(this),
+            $parent = $this.parent();
+        $parent.toggleClass('hidden-sidebar');
+        $this.toggleClass('active');
     });
 })(jQuery);
 

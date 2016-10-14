@@ -113,18 +113,17 @@ form .buttons {
     color: #d9534f;
 }
 
-/*sidebar*/
-aside {
+.navigation-sidebar {
   position: fixed;
   top:0;
   width: 200px;
   height: 100%;
   background-color: #000614;
 }
-aside.hidden-sidebar {
+.navigation-sidebar.hidden-sidebar {
   left: -200px;
 }
-aside .sidebar-toggler {
+.navigation-sidebar .sidebar-toggler {
   position: fixed;
   top: 20px;
   left: 200px;
@@ -140,10 +139,10 @@ aside .sidebar-toggler {
 .sidebar-toggler.active {
   left: 0;
 }
-aside a {
+.navigation-sidebar a {
   color: #667081;
 }
-aside a:visited {
+.navigation-sidebar a:visited {
   color: #667081;
 }
 nav {
@@ -189,10 +188,53 @@ a .fa-lg {
     line-height: 0.65em;
 }
 
+.filter-sidebar {
+      position: fixed;
+      top:0;
+      right:0;
+      width: 420px;
+      height: 100%;
+      background-color: #FFF;
+      z-index: 1;
+      padding: 15px;
+      border-left: 2px solid #1abc9c;
+}
+
+.filter-sidebar .form-group {
+    display: inline-block;
+}
+
+.filter-sidebar .form-control-label {
+    width: 75px;
+}
+
+.filter-sidebar-toggler {
+  position: fixed;
+  top: 20px;
+  right: 420px;
+  width: 38px;
+  height: 38px;
+  background-color: #1abc9c;
+  border-radius: 0 5px 5px 0;
+  color: #fff;
+  line-height: 38px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.filter-sidebar-toggler.active {
+    right: 0;
+    background-color: #34495e;
+}
+
+.filter-sidebar.hidden-sidebar {
+    right: -420px;
+}
+
 /*main*/
 .entity-main {
   margin-left: 200px;
-  padding: 20px 20px 0 50px;
+  padding: 20px 50px 0 50px;
 }
 .entity-main.hidden-sidebar {
   margin-left: 0;

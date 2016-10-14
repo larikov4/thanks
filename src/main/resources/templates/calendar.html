@@ -18,7 +18,7 @@
 			<div id='calendar'></div>
 		</main>
 
-		<aside class="hidden-sidebar">
+		<aside class="navigation-sidebar hidden-sidebar">
 			<div class="sidebar-toggler fa-lg fa fa-bars active"></div>
 			<nav>
 				<ul>
@@ -52,6 +52,46 @@
 				<span class="fa fa-sign-out fa-lg"></span>
 				<span>Logout</span>
 			</a>
+		</aside>
+
+		<aside class="filter-sidebar hidden-sidebar">
+			<div class="filter-sidebar-toggler fa-lg fa fa-filter active"></div>
+			<div class="form-group">
+				<label class="form-control-label" for="location">Location:</label>
+				<div  class="input-container">
+					<select id="filter-location" name="location" class="form-control select select-primary select-block"></select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="form-control-label">Camera:</label>
+				<div class="input-container">
+					<select id="filter-camera" name="camera" multiple="multiple" class="form-control multiselect multiselect-primary select-primary"></select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="form-control-label">Lens:</label>
+				<div class="input-container">
+					<select id="filter-lens" name="lens" multiple="multiple" class="form-control multiselect multiselect-primary select-primary"></select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="form-control-label">Light:</label>
+				<div class="input-container">
+					<select id="filter-light" name="light" multiple="multiple" class="form-control multiselect multiselect-primary select-primary"></select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="form-control-label">Sound:</label>
+				<div class="input-container">
+					<select id="filter-sound" name="sound" multiple="multiple" class="form-control multiselect multiselect-primary select-primary"></select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="form-control-label">Accessory:</label>
+				<div class="input-container">
+					<select id="filter-accessory" name="accessory" multiple="multiple" class="form-control multiselect multiselect-primary select-primary"></select>
+				</div>
+			</div>
 		</aside>
 
 		<div id="popover-container" class="hide">
