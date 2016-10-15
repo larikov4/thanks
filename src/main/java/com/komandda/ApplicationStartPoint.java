@@ -18,20 +18,29 @@ package com.komandda;
 
 import com.komandda.entity.Permission;
 import com.komandda.entity.User;
-import com.komandda.service.UserService;
+import com.komandda.repository.EquipmentRepository;
+import com.komandda.repository.LocationRepository;
+import com.komandda.repository.UserRepository;
+import com.komandda.service.EquipmentService;
+import com.komandda.service.LocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
-import java.util.Collections;
 
 @SpringBootApplication
 public class ApplicationStartPoint {
 
 	@Autowired
-	private UserService userService;
+	private UserRepository userRepository;
+
+	@Autowired
+	private EquipmentRepository equipmentRepository;
+
+	@Autowired
+	private LocationRepository locationRepository;
 
 	public static void main(String[] args) throws Exception {
 		SpringApplication.run(ApplicationStartPoint.class, args);
@@ -39,9 +48,32 @@ public class ApplicationStartPoint {
 
 	@PostConstruct
 	void init() {
-		if(userService.findAll().isEmpty()) {
+		setDeletedToFalse();
+		generateDefaultUserIfAnyAbsent();
+	}
+
+	private void setDeletedToFalse(){
+		userRepository.findAll().stream()
+				.filter(user -> !user.isDeleted())
+				.forEach(user -> {
+					userRepository.save(user);
+				});
+		equipmentRepository.findAll().stream()
+				.filter(equipment -> !equipment.isDeleted())
+				.forEach(equipment -> {
+					equipmentRepository.save(equipment);
+				});
+		locationRepository.findAll().stream()
+				.filter(location -> !location.isDeleted())
+				.forEach(location -> {
+					locationRepository.save(location);
+				});
+	}
+
+	private void generateDefaultUserIfAnyAbsent() {
+		if(userRepository.findAll().isEmpty()) {
 			User admin = generateDefaultUser();
-			userService.save(admin);
+			userRepository.save(admin);
 		}
 	}
 

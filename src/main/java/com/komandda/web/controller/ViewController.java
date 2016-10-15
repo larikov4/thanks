@@ -39,21 +39,21 @@ public class ViewController {
 
     @RequestMapping("/users")
     public String users(Model model) {
-        model.addAttribute("users", userService.findAll());
+        model.addAttribute("users", userService.findByDeletedFalse());
         return "users";
     }
 
 
     @RequestMapping("/locations")
     public String locations(Model model) {
-        model.addAttribute("locations", locationService.findAll());
+        model.addAttribute("locations", locationService.findByDeletedFalse());
         return "locations";
     }
 
 
     @RequestMapping("/equipment")
     public String equipment(Model model) {
-        model.addAttribute("equipment", equipmentService.findAll());
+        model.addAttribute("equipment", equipmentService.findByDeletedFalse());
         return "equipment";
     }
 

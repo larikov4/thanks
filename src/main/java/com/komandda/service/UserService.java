@@ -24,6 +24,10 @@ public class UserService {
         return hidePassword(repository.findAll());
     }
 
+    public List<User> findByDeletedFalse() {
+        return hidePassword(repository.findByDeletedFalse());
+    }
+
     public User findOne(String id) {
         return repository.findOne(id);
     }
@@ -41,11 +45,12 @@ public class UserService {
     }
 
     public void delete(User user){
-        repository.delete(user);
+        user.setDeleted(true);
+        repository.save(user);
     }
 
     public List<User> getFree(Date start, Date end, String id){
-        return hidePassword(freeEntitiesService.getFreeUsers(start, end, id));
+        return freeEntitiesService.getFreeUsers(start, end, id);
     }
 
     public List<User> hidePassword(List<User> users) {

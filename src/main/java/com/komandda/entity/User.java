@@ -23,6 +23,8 @@ public class User implements UserDetails {
 
     private String color;
 
+    private boolean deleted;
+
     /* Spring Security related fields*/
     private List<Permission> authorities;
     private boolean accountNonExpired = true;
@@ -61,6 +63,14 @@ public class User implements UserDetails {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 
     @Override

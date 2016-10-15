@@ -1,10 +1,7 @@
 package com.komandda.web.controller.rest;
 
-import com.komandda.entity.Equipment;
 import com.komandda.entity.User;
 import com.komandda.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.TimeZone;
 
 /**
  * Created by Yevhn on 29.05.2016.
@@ -29,7 +25,7 @@ public class UsersController {
 
     @RequestMapping(method = RequestMethod.GET)
     public List<User> findAll() {
-        return service.findAll();
+        return service.findByDeletedFalse();
     }
 
     @PreAuthorize("hasAuthority('user_edit')")

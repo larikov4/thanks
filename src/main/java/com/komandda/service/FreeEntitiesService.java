@@ -4,14 +4,9 @@ import com.komandda.entity.Equipment;
 import com.komandda.entity.Event;
 import com.komandda.entity.Location;
 import com.komandda.entity.User;
-import com.komandda.repository.EquipmentRepository;
-import com.komandda.repository.EventRepository;
-import com.komandda.repository.LocationRepository;
-import com.komandda.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -24,16 +19,16 @@ import java.util.List;
 @Service
 public class FreeEntitiesService {
     @Autowired
-    private EquipmentRepository equipmentRepository;
+    private EquipmentService equipmentService;
 
     @Autowired
-    private EventRepository eventRepository;
+    private EventService eventService;
 
     @Autowired
-    private LocationRepository locationRepository;
+    private LocationService locationService;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
 
     private final Logger logger = LoggerFactory.getLogger(FreeEntitiesService.class);
 
@@ -42,7 +37,7 @@ public class FreeEntitiesService {
     private List<Event> getActiveEvents(Date start, Date end, String id) {
         List<Event> activeEvents = new ArrayList<>();
 
-        List<Event> all = eventRepository.findAll();
+        List<Event> all = eventService.findAll();
         logger.info("All:" + all);
 
         for(Event event : all){
@@ -62,7 +57,7 @@ public class FreeEntitiesService {
     }
 
 //    private List<Event> getEvents() {
-//        List<Event> all = eventRepository.findAll();
+//        List<Event> all = eventService.findByDeletedFalse();
 //        for(Event event : all){
 //            event.setStart(new Date(event.getStart().getTime() + fourHours));
 //            event.setEnd(new Date(event.getEnd().getTime() + fourHours));
@@ -71,7 +66,7 @@ public class FreeEntitiesService {
 //    }
 
     public List<Location> getFreeLocations(final Date start, final Date end, String id){
-        List<Location> locations = locationRepository.findAll();
+        List<Location> locations = locationService.findByDeletedFalse();
         List<Event> activeEvents = getActiveEvents(start, end, id);
         for(Event event : activeEvents) {
             Location location = event.getLocation();
@@ -83,7 +78,7 @@ public class FreeEntitiesService {
     }
 
     public List<User> getFreeUsers(Date start, Date end, String id){
-        List<User> users = userRepository.findAll();
+        List<User> users = userService.findByDeletedFalse();
         List<Event> activeEvents = getActiveEvents(start, end, id);
         for(Event event : activeEvents) {
             users.removeAll(event.getUsers());
@@ -92,7 +87,7 @@ public class FreeEntitiesService {
     }
 
     public List<Equipment> getFreeEquipment(Date start, Date end, String id){
-        List<Equipment> equipments = equipmentRepository.findAll();
+        List<Equipment> equipments = equipmentService.findByDeletedFalse();
         List<Event> activeEvents = getActiveEvents(start, end, id);
         for(Event event : activeEvents) {
             equipments.removeAll(event.getEquipment());

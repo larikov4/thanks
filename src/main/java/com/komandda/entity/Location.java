@@ -19,6 +19,8 @@ public class Location {
 
     private boolean parallel;
 
+    private boolean deleted;
+
     public String getId() {
         return id;
     }
@@ -49,6 +51,14 @@ public class Location {
 
     public void setParallel(boolean parallel) {
         this.parallel = parallel;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 
     @Override

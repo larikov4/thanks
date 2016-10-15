@@ -1,9 +1,6 @@
 package com.komandda.web.controller.rest;
 
-import com.komandda.entity.Equipment;
 import com.komandda.entity.Location;
-import com.komandda.entity.User;
-import com.komandda.service.EquipmentService;
 import com.komandda.service.LocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -28,7 +25,7 @@ public class LocationController {
 
     @RequestMapping(method = RequestMethod.GET)
     public List<Location> findAll() {
-        return service.findAll();
+        return service.findByDeletedFalse();
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)

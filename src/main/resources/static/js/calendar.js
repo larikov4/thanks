@@ -31,6 +31,26 @@ $(document).ready(function() {
         })
     }
 
+    function mapDeletedItems(items) {
+        return items.map(addDeletedSuffixIfDeleted);
+    }
+
+    function addDeletedSuffixIfDeleted(item){
+        if(item && item.deleted) {
+            if(item.name) {
+                item.name += " (deleted)";
+            }
+            if(item.username) {
+                item.username += " (deleted)";
+            }
+        }
+        return item;
+    }
+
+    EQUIPMENT = mapDeletedItems(EQUIPMENT);
+    USERS = mapDeletedItems(USERS);
+    LOCATIONS = mapDeletedItems(LOCATIONS);
+
 	(function initEntities(){
 		for(var i=0;i<LOCATIONS.length;i++) {
 			repo.locations[LOCATIONS[i].name] = LOCATIONS[i].id;
@@ -238,7 +258,8 @@ $(document).ready(function() {
 				ajaxCounter++;
 				var $select = $('.modal-edit').find('#location');
 				var prev = $select.val();
-				prepareSelect(data, 'name', Object.keys(repo.locations), 'location');
+				var additionalValues = currentEvent ? [currentEvent.location] : [];
+				prepareSelect(data, 'name', Object.keys(repo.locations), 'location', additionalValues);
 				if(prev){
 					$select.val(prev);
 				}
@@ -274,7 +295,8 @@ $(document).ready(function() {
                     var $select = $('.modal-edit').find('#' + type);
                     var prev = $select.val();
                     var equipmentContainer = { equipment : data };
-                    prepareSelect(splitEquipment(equipmentContainer)[type], 'name', Object.keys(repo[type]), type);
+                    var additionalValues = currentEvent ? currentEvent[type] : [];
+                    prepareSelect(splitEquipment(equipmentContainer)[type], 'name', Object.keys(repo[type]), type, additionalValues);
                     if(prev){
                         $select.val(prev);
                     }
@@ -304,7 +326,8 @@ $(document).ready(function() {
 				ajaxCounter++;
 				var $select = $('.modal-edit').find('#user');
 				var prev = $select.val();
-				prepareSelect(data, 'username', Object.keys(repo.userIds), 'user');
+				var additionalValues = currentEvent ? currentEvent.users : [];
+				prepareSelect(data, 'username', Object.keys(repo.userIds), 'user', additionalValues);
 				if(prev){
 					$select.val(prev);
 				}
@@ -323,11 +346,12 @@ $(document).ready(function() {
 			}
 		});
 
-		function prepareSelect(data, property, entities, entityName){
+		function prepareSelect(data, property, entities, entityName, additionalNames){
 			repo.free[entityName] = getFreeArray(data, property);
 			repo.busy[entityName] = filterBusy(entities, repo.free[entityName]);
+			var selectValues = addAdditionalValuesIfAbsent(repo.free[entityName], mapNames(additionalNames));
 			var $input = $('.modal-edit #' + entityName);
-			fillSelect($input, repo.free[entityName], repo.busy[entityName]);
+			fillSelect($input, selectValues);
 			$input.prop( "disabled", false );
 		}
 
@@ -339,7 +363,13 @@ $(document).ready(function() {
             return freeArray;
         }
 
-        function fillSelect($input, entities, busyEntities) {
+        function addAdditionalValuesIfAbsent(values, additional){
+            return values.concat(additional.filter(function(value){
+                return !values.contains(value);
+            }))
+        }
+
+        function fillSelect($input, entities) {
             $input.empty();
             var option = $('<option>');
             for(var i=0;i<entities.length;i++) {
@@ -370,6 +400,9 @@ $(document).ready(function() {
 			right: 'month,agendaWeek,agendaDay'
 		},
 		events:EVENTS.map(function(event){
+		    event.equipment = mapDeletedItems(event.equipment);
+            event.users = mapDeletedItems(event.users);
+            event.location = addDeletedSuffixIfDeleted(event.location);
             event.equipment = mapEquipmentType(event.equipment);
 		    return splitEquipment(event)
 		}),
@@ -502,10 +535,18 @@ $(document).ready(function() {
 				for(var i=0;i<event.users.length;i++){
 					gridHolder.append(gridElement.clone()
 						.css('background-color', repo.colors.users[event.users[i].username])
-						.text(event.users[i].username.split(' ').map(function(str){return str.trim()[0];}).join(''))
+						.text(trimName(event.users[i].username))
 					);
 				}
 				$target.append(gridHolder);
+
+				function trimName(name){
+				    return name
+				        .split(' ')
+				        .map(function(str){ return str.trim()[0]; })
+				        .filter(function(char){ return char!=='('})
+				        .join('')
+				}
 			}
 		},
 		eventAfterRender: function (event, $target){
@@ -686,7 +727,7 @@ $(document).ready(function() {
 					currentBubleContainer.append(bubbleTitle.clone().text(data[i].author.username + " " + dateStr));
 					var authorColor = repo.colors.users[data[i].author.username];
 					bubble.css('background-color', authorColor);
-					var diff = data[i].diff;
+					var diff = data[i].diff;//TODO description
 					currentBubleContainer
 						.append(diff.title === null ? '' : bubble.clone().text(diff.title))
 						.append(diff.start === null ? '' : bubble.clone().text(diff.start.replace('T',' ')))

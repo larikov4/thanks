@@ -24,6 +24,10 @@ public class LocationService {
         return repository.findAll();
     }
 
+    public List<Location> findByDeletedFalse() {
+        return repository.findByDeletedFalse();
+    }
+
     public Location findOne(String id) {
         return repository.findOne(id);
     }
@@ -37,7 +41,8 @@ public class LocationService {
     }
 
     public void delete(Location location){
-        repository.delete(location);
+        location.setDeleted(true);
+        repository.save(location);
     }
 
     public List<Location> getFree(Date start, Date end, String id){

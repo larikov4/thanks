@@ -6,9 +6,11 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * @author Yevhen_Larikov
  */
 public interface LocationRepository extends MongoRepository<Location, String> {
-
+    List<Location> findByDeletedFalse();
 }

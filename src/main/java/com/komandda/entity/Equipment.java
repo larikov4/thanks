@@ -17,6 +17,8 @@ public class Equipment {
 
     private EquipmentType type;
 
+    private boolean deleted;
+
     public String getId() {
         return id;
     }
@@ -39,6 +41,14 @@ public class Equipment {
 
     public void setType(EquipmentType type) {
         this.type = type;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 
     @Override

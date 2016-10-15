@@ -101,7 +101,7 @@ $grid.jsGrid({
         { name: "user edit", type: "checkbox", width: 20},
         { name: "equipment edit", type: "checkbox", width: 30},
         { name: "location edit", type: "checkbox", width: 25},
-        IS_EDITABLE ? { type: "control", width: 15, deleteButton: false } : ''
+        IS_EDITABLE ? { type: "control", width: 15 } : ''
     ]
 });
 

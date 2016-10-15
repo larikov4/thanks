@@ -24,6 +24,10 @@ public class EquipmentService {
         return repository.findAll();
     }
 
+    public List<Equipment> findByDeletedFalse() {
+        return repository.findByDeletedFalse();
+    }
+
     public Equipment findOne(String id) {
         return repository.findOne(id);
     }
@@ -37,7 +41,8 @@ public class EquipmentService {
     }
 
     public void delete(Equipment equipment){
-        repository.delete(equipment);
+        equipment.setDeleted(true);
+        repository.save(equipment);
     }
 
     public List<Equipment> getFree(Date start, Date end, String id){
