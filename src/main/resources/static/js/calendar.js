@@ -126,6 +126,24 @@ $(document).ready(function() {
 		wasModalSubmitted = true;
     });
 
+    fillSelect($('#filter-location'), Object.keys(repo.locations))
+    fillSelect($('#filter-user'), Object.keys(repo.users))
+    fillSelect($('#filter-camera'), Object.keys(repo.camera))
+    fillSelect($('#filter-lens'), Object.keys(repo.lens))
+    fillSelect($('#filter-light'), Object.keys(repo.light))
+    fillSelect($('#filter-sound'), Object.keys(repo.sound))
+    fillSelect($('#filter-accessory'), Object.keys(repo.accessory))
+
+    $('#filter-location, #filter-user, #filter-camera, #filter-lens, #filter-light, #filter-sound, #filter-accessory')
+        .on('change', function(){
+            var data = {};
+            var $container = $('.filter-sidebar');
+            var filterPrefix = "filter-";
+            fetchUser($container, data, filterPrefix);
+            fetchLocationAndEquipment($container, data, filterPrefix);
+            console.log(data)
+    });
+
     function fetchEventFromForm(){
         var data = {};
         var $container = $('.modal-edit');
@@ -133,37 +151,50 @@ $(document).ready(function() {
         data.description = $container.find('#description').val();
         data.start = $container.find('#start-date').val() + "T" + $('#start-time').val();
         data.end = $container.find('#end-date').val() + "T" + $container.find('#end-time').val();
-        data.users = $container.find('#user').val().map(function(username){
-            return {
-                id:repo.userIds[username],
-                username:username,
-                email:repo.users[username].email
-            };
-        });
+        fetchUser($container, data);
         if($("#recording").prop('checked')) {
             fetchLocationAndEquipment($container, data);
         }
         return data;
     }
 
-    function fetchLocationAndEquipment($container, data){
-        var locationName = $container.find('#location').val();
-        data.location = {
-            id: repo.locations[locationName],
-            name: locationName
-        };
-
-        data.equipment = fetchEquipmentByType('camera', [], $container);
-        data.equipment = fetchEquipmentByType('lens', data.equipment, $container);
-        data.equipment = fetchEquipmentByType('sound', data.equipment, $container);
-        data.equipment = fetchEquipmentByType('light', data.equipment, $container);
-        data.equipment = fetchEquipmentByType('accessory', data.equipment, $container);
+    function fetchUser($container, data, prefix){
+        prefix = prefix || '';
+        var currentId = '#' + prefix + 'user';
+        var userFieldValue = $container.find(currentId).val() ? $container.find(currentId).val() : [];
+        data.users = userFieldValue.map(function(username){
+            return {
+                id:repo.userIds[username],
+                username:username,
+                email:repo.users[username].email
+            };
+        });
         return data;
     }
 
-    function fetchEquipmentByType(type, equipment, $container){
-        if($container.find('#' + type ).val()) {
-            currentTypeEquipment = $container.find('#' + type).val().map(function(name){
+    function fetchLocationAndEquipment($container, data, prefix){
+        prefix = prefix || '';
+        var locationName = $container.find('#' + prefix + 'location').val();
+        data.location = null;
+        if(locationName) {
+            data.location = {
+                id: repo.locations[locationName],
+                name: locationName
+            };
+        }
+
+        data.equipment = fetchEquipmentByType('camera', [], $container, prefix);
+        data.equipment = fetchEquipmentByType('lens', data.equipment, $container, prefix);
+        data.equipment = fetchEquipmentByType('sound', data.equipment, $container, prefix);
+        data.equipment = fetchEquipmentByType('light', data.equipment, $container, prefix);
+        data.equipment = fetchEquipmentByType('accessory', data.equipment, $container, prefix);
+        return data;
+    }
+
+    function fetchEquipmentByType(type, equipment, $container, prefix){
+        var currentId = '#' + prefix + type;
+        if($container.find(currentId).val()) {
+            currentTypeEquipment = $container.find(currentId).val().map(function(name){
                 return {
                     id:repo.equipment[name],
                     name:name,
@@ -369,15 +400,16 @@ $(document).ready(function() {
             }))
         }
 
-        function fillSelect($input, entities) {
-            $input.empty();
-            var option = $('<option>');
-            for(var i=0;i<entities.length;i++) {
-                $input.append(option.clone().val(entities[i]).html(entities[i]))
-            }
-            $input.val('').addClass('multiselect-primary').removeClass('multiselect-default');
-        }
 	}
+
+    function fillSelect($input, entities) {
+        $input.empty();
+        var option = $('<option>');
+        for(var i=0;i<entities.length;i++) {
+            $input.append(option.clone().val(entities[i]).html(entities[i]))
+        }
+        $input.val('').addClass('multiselect-primary').removeClass('multiselect-default');
+    }
 
 	function updateEvent(event) {
 		delete event.source;
