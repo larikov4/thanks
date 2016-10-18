@@ -141,8 +141,23 @@ $(document).ready(function() {
             var filterPrefix = "filter-";
             fetchUser($container, data, filterPrefix);
             fetchLocationAndEquipment($container, data, filterPrefix);
-            console.log(data)
+            mapIdsAndUsernames(data);
+            console.log(data);
+            $.ajax({
+                type: "GET",
+                url: REST_URL + "/filter",
+                data:data,
+                success: function(data){
+                    console.log(data);
+                }
+            })
     });
+
+    function mapIdsAndUsernames(data){
+        data.users = data.users.map(function(item){return item.username;})
+        data.equipment = data.equipment.map(function(item){return item.id;})
+        data.location = data.location ? data.location.id : null;
+    }
 
     function fetchEventFromForm(){
         var data = {};

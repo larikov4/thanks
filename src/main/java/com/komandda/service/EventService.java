@@ -7,14 +7,14 @@ import com.komandda.entity.User;
 import com.komandda.repository.EventRepository;
 import com.komandda.service.mail.MailHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Created by yevhen on 28.06.16.
@@ -72,6 +72,26 @@ public class EventService {
         repository.delete(event);
         sendDeletingEventEmail(event, author);
         return hidePassword(event);
+    }
+
+    public List<Event> findBy(final String locationId,final List<String> usernames,final List<String> equipmentIds) {
+        List<String> safeUsernames = Optional.ofNullable(usernames).orElse(Collections.emptyList());
+        List<String> safeEquipmentIds = Optional.ofNullable(equipmentIds).orElse(Collections.emptyList());
+        List<Event> events = findAll();
+        Stream<Event> locationFilterStream = events.stream()
+                .filter(event -> Objects.nonNull(event.getLocation()))
+                .filter(event -> event.getLocation().getId().equals(locationId));
+        Stream<Event> userFilterStream = events.stream()
+                .filter(event -> event.getUsers().stream()
+                        .map(User::getUsername)
+                        .anyMatch(safeUsernames::contains));
+        Stream<Event> equipmentFilterStream = events.stream()
+                .filter(event -> event.getEquipment()
+                        .stream().map(Equipment::getId)
+                        .anyMatch(safeEquipmentIds::contains));
+        return Stream.concat(Stream.concat(locationFilterStream, userFilterStream), equipmentFilterStream)
+                .distinct()
+                .collect(toList());
     }
 
     private void setEmptyEquipmentListIfAbsent(Event event) {
