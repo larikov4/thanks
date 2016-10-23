@@ -20,6 +20,7 @@ $(document).ready(function() {
 
 	var currentEvent;
 	var currentUser;
+	var currentFilter;
 	var movingEvent = null;
 	var REST_URL = "/rest/events";
 	var wasModalSubmitted = false;
@@ -126,7 +127,7 @@ $(document).ready(function() {
 		wasModalSubmitted = true;
     });
 
-    fillSelect($('#filter-location'), Object.keys(repo.locations))
+    fillSelect($('#filter-location'), [' '].concat(Object.keys(repo.locations)))
     fillSelect($('#filter-user'), Object.keys(repo.users))
     fillSelect($('#filter-camera'), Object.keys(repo.camera))
     fillSelect($('#filter-lens'), Object.keys(repo.lens))
@@ -142,21 +143,52 @@ $(document).ready(function() {
             fetchUser($container, data, filterPrefix);
             fetchLocationAndEquipment($container, data, filterPrefix);
             mapIdsAndUsernames(data);
+            currentFilter = data;
             console.log(data);
-            $.ajax({
-                type: "GET",
-                url: REST_URL + "/filter",
-                data:data,
-                success: function(data){
-                    console.log(data);
-                }
-            })
+            var url = isEmptyFilter(data) ? REST_URL : REST_URL + "/filter";
+            performFilerRequest(data, url);
     });
+
+    function isEmptyFilter(filter){
+        return !filter || (!filter.location && filter.users.length === 0 && filter.equipment.length === 0)
+    }
+
+    function performFilerRequest(data, url){
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: data,
+            success: function(data){
+                console.log(data);
+                $('#calendar').fullCalendar('removeEvents');
+                $('#calendar').fullCalendar('addEventSource', mapFilteredEvents(data));
+            }
+        })
+    }
 
     function mapIdsAndUsernames(data){
         data.users = data.users.map(function(item){return item.username;})
         data.equipment = data.equipment.map(function(item){return item.id;})
         data.location = data.location ? data.location.id : null;
+    }
+
+    function mapFilteredEvents(events) {
+        return events.map(function(event){
+            event.equipment = mapDeletedItems(event.equipment);
+            event.users = mapDeletedItems(event.users);
+            event.location = addDeletedSuffixIfDeleted(event.location);
+            return splitEquipment(event)
+        });
+    }
+
+    function mapEvents(events){
+        return events.map(function(event){
+            event.equipment = mapDeletedItems(event.equipment);
+            event.users = mapDeletedItems(event.users);
+            event.location = addDeletedSuffixIfDeleted(event.location);
+            event.equipment = mapEquipmentType(event.equipment);
+            return splitEquipment(event)
+        });
     }
 
     function fetchEventFromForm(){
@@ -304,7 +336,7 @@ $(document).ready(function() {
 				ajaxCounter++;
 				var $select = $('.modal-edit').find('#location');
 				var prev = $select.val();
-				var additionalValues = currentEvent ? [currentEvent.location] : [];
+				var additionalValues = currentEvent && currentEvent.location ? [currentEvent.location] : [];
 				prepareSelect(data, 'name', Object.keys(repo.locations), 'location', additionalValues);
 				if(prev){
 					$select.val(prev);
@@ -446,13 +478,7 @@ $(document).ready(function() {
 			center: 'title',
 			right: 'month,agendaWeek,agendaDay'
 		},
-		events:EVENTS.map(function(event){
-		    event.equipment = mapDeletedItems(event.equipment);
-            event.users = mapDeletedItems(event.users);
-            event.location = addDeletedSuffixIfDeleted(event.location);
-            event.equipment = mapEquipmentType(event.equipment);
-		    return splitEquipment(event)
-		}),
+		events:mapEvents(EVENTS),
 		editable:IS_EDITABLE,
 		defaultView:'agendaWeek',
 	 	timeFormat: 'H:mm',
@@ -868,6 +894,12 @@ $(document).ready(function() {
 		});
 	}
 
+    function mapIds(entities){
+        return entities.map(function (entity) {
+            return entity.id;
+        });
+    }
+
 	function filterBusy(all, free){
 		return all.filter(function(item) {
 		   return free.indexOf(item) === -1;
@@ -1132,18 +1164,33 @@ $(document).ready(function() {
         stompClient.connect({}, function (frame) {
             stompClient.subscribe('/event/create', function (message) {
                 var createdEvent = JSON.parse(message.body);
-                $('#calendar').fullCalendar('renderEvent', splitEquipment(createdEvent));
+                if(isEmptyFilter(currentFilter) || doesSatisfyCurrentFilter(createdEvent)){
+                    $('#calendar').fullCalendar('renderEvent', splitEquipment(createdEvent));
+                }
             });
             stompClient.subscribe('/event/update', function (message) {
                 var updatedEvent = JSON.parse(message.body);
                 $('#calendar').fullCalendar('removeEvents', updatedEvent.id);
-                $('#calendar').fullCalendar('renderEvent', splitEquipment(updatedEvent));
+                if(isEmptyFilter(currentFilter) || doesSatisfyCurrentFilter(updatedEvent)){
+                    $('#calendar').fullCalendar('renderEvent', splitEquipment(updatedEvent));
+                }
             });
             stompClient.subscribe('/event/delete', function (message) {
                 var deletedEvent = JSON.parse(message.body);
                 $('#calendar').fullCalendar('removeEvents', deletedEvent.id);
             });
         });
+
+        function doesSatisfyCurrentFilter(event){
+            return currentFilter
+                && ( (event.location && currentFilter.location === event.location.id)
+                || currentFilter.users
+                    .filter(function(item){return mapNames(event.users).contains(item)})
+                    .length != 0
+                || currentFilter.equipment
+                   .filter(function(item){return mapIds(event.equipment).contains(item)})
+                   .length != 0);
+        }
     })();
 });
 

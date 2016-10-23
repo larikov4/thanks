@@ -27,7 +27,7 @@ public class EventController {
 
     @RequestMapping(method = RequestMethod.GET)
     public List<Event> findAll() {
-        throw new UnsupportedOperationException();
+        return service.findAll();
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)

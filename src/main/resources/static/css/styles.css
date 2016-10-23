@@ -192,12 +192,12 @@ a .fa-lg {
       position: fixed;
       top:0;
       right:0;
-      width: 420px;
+      width: 422px;
       height: 100%;
       background-color: #FFF;
       z-index: 1;
       padding: 15px;
-      border-left: 2px solid #1abc9c;
+      border-left: 2px solid #34495e;
 }
 
 .filter-sidebar .form-group {
@@ -205,16 +205,16 @@ a .fa-lg {
 }
 
 .filter-sidebar .form-control-label {
-    width: 75px;
+    width: 85px;
 }
 
 .filter-sidebar-toggler {
   position: fixed;
   top: 20px;
-  right: 420px;
+  right: 422px;
   width: 38px;
   height: 38px;
-  background-color: #1abc9c;
+  background-color: #34495e;
   border-radius: 0 5px 5px 0;
   color: #fff;
   line-height: 38px;
@@ -224,11 +224,14 @@ a .fa-lg {
 
 .filter-sidebar-toggler.active {
     right: 0;
-    background-color: #34495e;
 }
 
 .filter-sidebar.hidden-sidebar {
-    right: -420px;
+    right: -422px;
+}
+
+.filter-sidebar .form-group {
+    margin-bottom:0;
 }
 
 /*main*/
@@ -241,8 +244,21 @@ a .fa-lg {
 }
 
 .select2-result-label {
-
+    min-height:41px;
 }
+
+.select2-choice {
+    min-height:41px;
+}
+
+.select2-container {
+    min-height:41px;
+}
+
+.select.form-control {
+    height:41px;
+}
+
 .modal-dialog {
     width: 848px;
 }
