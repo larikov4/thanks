@@ -41,9 +41,6 @@ $(document).ready(function() {
             if(item.name) {
                 item.name += " (deleted)";
             }
-            if(item.username) {
-                item.username += " (deleted)";
-            }
         }
         return item;
     }
@@ -77,16 +74,41 @@ $(document).ready(function() {
                 repo.accessory[EQUIPMENT[i].name] = EQUIPMENT[i].id;
             }
 		}
+		var currentUserName = null;
 		for(var i=0;i<USERS.length;i++) {
-		    repo.users[USERS[i].username] = USERS[i];
-			repo.userIds[USERS[i].username] = USERS[i].id;
-			repo.colors.users[USERS[i].username] = USERS[i].color;
+		    repo.users[USERS[i].name] = USERS[i];
+			repo.userIds[USERS[i].name] = USERS[i].id;
+			repo.colors.users[USERS[i].name] = USERS[i].color;
+			if(CURRENT_USERNAME === USERS[i].username) {
+			    currentUserName = USERS[i].name;
+			}
 		}
 		currentUser = {
-            id:repo.userIds[CURRENT_USER_NAME],
-            username:CURRENT_USER_NAME
+            id:repo.userIds[currentUserName],
+            name:currentUserName
 		};
 	})();
+
+    function renderBirthdayEvent(){
+        var birthdayEvents = [];
+        for(var i=0;i<USERS.length;i++) {
+            var birthday = USERS[i].birthday;
+            if(birthday){
+                var currentYear = moment(new Date()).year();
+                birthdayEvents.push({
+                    title: "Birthday of " + USERS[i].name,
+                    start:moment(birthday).add(8, 'hours').year(currentYear),//TODO
+                    end:moment(birthday).add(18, 'hours').year(currentYear),
+                    id: 'birthday' + i,
+                    author: {
+                        name:currentUser.name
+                    }
+                });
+            }
+        }
+        $('#calendar').fullCalendar('addEventSource', birthdayEvents);
+    }
+
 
 	(function initTimePickers() {
 	    $('.time').each(function(i, v){
@@ -142,7 +164,7 @@ $(document).ready(function() {
             var filterPrefix = "filter-";
             fetchUser($container, data, filterPrefix);
             fetchLocationAndEquipment($container, data, filterPrefix);
-            mapIdsAndUsernames(data);
+            mapIdsAndNames(data);
             currentFilter = data;
             console.log(data);
             var url = isEmptyFilter(data) ? REST_URL : REST_URL + "/filter";
@@ -158,16 +180,19 @@ $(document).ready(function() {
             type: "GET",
             url: url,
             data: data,
-            success: function(data){
-                console.log(data);
+            success: function(response){
+                console.log(response);
                 $('#calendar').fullCalendar('removeEvents');
-                $('#calendar').fullCalendar('addEventSource', mapFilteredEvents(data));
+                $('#calendar').fullCalendar('addEventSource', mapFilteredEvents(response));
+                if(isEmptyFilter(data)){
+                    renderBirthdayEvent();
+                }
             }
         })
     }
 
-    function mapIdsAndUsernames(data){
-        data.users = data.users.map(function(item){return item.username;})
+    function mapIdsAndNames(data){
+        data.users = data.users.map(function(item){return item.name;})
         data.equipment = data.equipment.map(function(item){return item.id;})
         data.location = data.location ? data.location.id : null;
     }
@@ -209,11 +234,11 @@ $(document).ready(function() {
         prefix = prefix || '';
         var currentId = '#' + prefix + 'user';
         var userFieldValue = $container.find(currentId).val() ? $container.find(currentId).val() : [];
-        data.users = userFieldValue.map(function(username){
+        data.users = userFieldValue.map(function(name){
             return {
-                id:repo.userIds[username],
-                username:username,
-                email:repo.users[username].email
+                id:repo.userIds[name],
+                name:name,
+                email:repo.users[name].email
             };
         });
         return data;
@@ -405,13 +430,13 @@ $(document).ready(function() {
 				var $select = $('.modal-edit').find('#user');
 				var prev = $select.val();
 				var additionalValues = currentEvent ? currentEvent.users : [];
-				prepareSelect(data, 'username', Object.keys(repo.userIds), 'user', additionalValues);
+				prepareSelect(data, 'name', Object.keys(repo.userIds), 'user', additionalValues);
 				if(prev){
 					$select.val(prev);
 				}
 				if(currentEvent) {
 					$select.select2('val', currentEvent.users.map(function (user) {
-						return user.username
+						return user.name
 					}));
 				}
 				if(wasModalSubmitted && ajaxCounter === 3){
@@ -562,13 +587,13 @@ $(document).ready(function() {
 		            id: 'stub id',
 		            isStub:true,
 		            author: {
-		                username:currentUser.username
+		                name:currentUser.name
 		            }
 		        };
 		    }
 		},
 		eventRender: function (event, $target, view) {
-			var authorColor = repo.colors.users[event.author.username];
+			var authorColor = repo.colors.users[event.author.name];
 			$target.css('background-color', authorColor);
 			$target.css('border-color', authorColor);
 
@@ -601,16 +626,17 @@ $(document).ready(function() {
                     }
 				}
 				$target.append($container);
-
-				var gridClass = "fc-event-username col-md-" + 12 / event.users.length;
-				var gridHolder = $('<div>').addClass("row");
-				var gridElement = $('<div>').addClass(gridClass);
-				for(var i=0;i<event.users.length;i++){
-					gridHolder.append(gridElement.clone()
-						.css('background-color', repo.colors.users[event.users[i].username])
-						.text(trimName(event.users[i].username))
-					);
-				}
+                if(event.users){
+                    var gridClass = "fc-event-username col-md-" + 12 / event.users.length;
+                    var gridHolder = $('<div>').addClass("row");
+                    var gridElement = $('<div>').addClass(gridClass);
+                    for(var i=0;i<event.users.length;i++){
+                        gridHolder.append(gridElement.clone()
+                            .css('background-color', repo.colors.users[event.users[i].name])
+                            .text(trimName(event.users[i].name))
+                        );
+                    }
+                }
 				$target.append(gridHolder);
 
 				function trimName(name){
@@ -632,7 +658,7 @@ $(document).ready(function() {
 					$container.children().last().text($container.children().last().text() + " ...")
 				}
 			});
-			if(IS_EDITABLE){
+			if(IS_EDITABLE && event.users){
 				$target.popover({
 					title:event.title + '<button type="button" class="close" data-dismiss="popover-container"><span>x</span></button>',
 					html: true,
@@ -676,7 +702,7 @@ $(document).ready(function() {
 							    $popover.find('.description-container').show();
 							    $popover.find('.description').text(event.description);
                             }
-							$popover.find('.author').text(event.author.username);
+							$popover.find('.author').text(event.author.name);
                             $popover.find('.created').text(moment(event.created).format('YYYY-MM-DD HH:mm'));
 							if(event.location) {
 							    $popover.find('.location-container').show();
@@ -687,7 +713,7 @@ $(document).ready(function() {
 							}
 							var $li = $('<li>');
 							var usersContainer = $popover.find('.users');
-							event.users.forEach(function(user) {usersContainer.append($li.clone().text(user.username))});
+							event.users.forEach(function(user) {usersContainer.append($li.clone().text(user.name))});
                             appendEquipment('camera');
                             appendEquipment('lens');
                             appendEquipment('light');
@@ -735,6 +761,8 @@ $(document).ready(function() {
             movingEvent = null;
         }
     })
+
+    renderBirthdayEvent();
 
 	function onEventClick(event) {
 		currentEvent = event;
@@ -797,8 +825,8 @@ $(document).ready(function() {
 				for(var i=0;i<data.length;i++){
 					var currentBubleContainer = bubbleContainer.clone();
 					var dateStr = moment(data[i].date).format('YYYY-MM-DD HH:mm');
-					currentBubleContainer.append(bubbleTitle.clone().text(data[i].author.username + " " + dateStr));
-					var authorColor = repo.colors.users[data[i].author.username];
+					currentBubleContainer.append(bubbleTitle.clone().text(data[i].author.name + " " + dateStr));
+					var authorColor = repo.colors.users[data[i].author.name];
 					bubble.css('background-color', authorColor);
 					var diff = data[i].diff;//TODO description
 					currentBubleContainer
@@ -890,7 +918,7 @@ $(document).ready(function() {
 
 	function mapNames(entities){
 		return entities.map(function (entity) {
-			return entity.name || entity.username;
+			return entity.name;
 		});
 	}
 

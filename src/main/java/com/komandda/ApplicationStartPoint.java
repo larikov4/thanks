@@ -26,6 +26,7 @@ import com.komandda.service.LocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
@@ -48,8 +49,21 @@ public class ApplicationStartPoint {
 
 	@PostConstruct
 	void init() {
-		setDeletedToFalse();
-		generateDefaultUserIfAnyAbsent();
+        generateDefaultUserIfAnyAbsent();
+        setDeletedToFalse();
+		setNameIfAbsent();
+	}
+
+	private void setNameIfAbsent() {
+		userRepository.findAll().stream()
+				.filter(user -> StringUtils.isEmpty(user.getName()))
+				.map(user -> {
+					user.setName(user.getUsername());
+					return user;
+				})
+				.forEach(user -> {
+					userRepository.save(user);
+				});
 	}
 
 	private void setDeletedToFalse(){

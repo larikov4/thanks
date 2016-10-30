@@ -1,4 +1,4 @@
-package com.komandda.entity.json;
+package com.komandda.entity.json.datetime;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -16,13 +16,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-public class DateWithoutTimeZoneJsonSerializer extends JsonSerializer<Date> {
+public class DateTimeJsonSerializer extends JsonSerializer<Date> {
 
     private static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
 
     @Override
     public void serialize(Date date, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
-//        SIMPLE_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
         jsonGenerator.writeString(SIMPLE_DATE_FORMAT.format(date));
     }
 }

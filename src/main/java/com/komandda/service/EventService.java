@@ -74,8 +74,8 @@ public class EventService {
         return hidePassword(event);
     }
 
-    public List<Event> findBy(final String locationId,final List<String> usernames,final List<String> equipmentIds) {
-        List<String> safeUsernames = Optional.ofNullable(usernames).orElse(Collections.emptyList());
+    public List<Event> findBy(final String locationId,final List<String> names,final List<String> equipmentIds) {
+        List<String> safeNames = Optional.ofNullable(names).orElse(Collections.emptyList());
         List<String> safeEquipmentIds = Optional.ofNullable(equipmentIds).orElse(Collections.emptyList());
         List<Event> events = findAll();
         Stream<Event> locationFilterStream = events.stream()
@@ -83,8 +83,8 @@ public class EventService {
                 .filter(event -> event.getLocation().getId().equals(locationId));
         Stream<Event> userFilterStream = events.stream()
                 .filter(event -> event.getUsers().stream()
-                        .map(User::getUsername)
-                        .anyMatch(safeUsernames::contains));
+                        .map(User::getName)
+                        .anyMatch(safeNames::contains));
         Stream<Event> equipmentFilterStream = events.stream()
                 .filter(event -> event.getEquipment()
                         .stream().map(Equipment::getId)
@@ -118,11 +118,11 @@ public class EventService {
         eventBuilder.append("Title ").append(event.getTitle()).append(System.lineSeparator())
                 .append("Description ").append(event.getDescription()).append(System.lineSeparator())
                 .append("Date ").append(format(event.getStart())).append(" to ").append(format(event.getEnd())).append(System.lineSeparator())
-                .append("Author ").append(event.getAuthor().getUsername()).append(System.lineSeparator())
+                .append("Author ").append(event.getAuthor().getName()).append(System.lineSeparator())
                 .append("Location ").append(event.getLocation().getName()).append(System.lineSeparator());
         eventBuilder.append("Users: ").append(System.lineSeparator());
         for(User user : event.getUsers()) {
-            eventBuilder.append("\t").append(user.getUsername()).append(System.lineSeparator());
+            eventBuilder.append("\t").append(user.getName()).append(System.lineSeparator());
         }
 
         eventBuilder.append("Equipment: ").append(System.lineSeparator());
@@ -136,7 +136,7 @@ public class EventService {
             String email = user.getEmail();
             if(!StringUtils.isEmpty(email)) {
                 String emailBody = new StringBuilder()
-                        .append("Hello ").append(user.getUsername()).append(System.lineSeparator())
+                        .append("Hello ").append(user.getName()).append(System.lineSeparator())
                         .append("New event was created.").append(System.lineSeparator())
                         .append(createdEvent).toString();
                 mailHelper.sendMail(email, "New event created", emailBody);
@@ -175,7 +175,7 @@ public class EventService {
                 .append("\tto ")
                 .append(format(currentEvent.getEnd())).append(System.lineSeparator());
         }
-        if (!prevEvent.getLocation().equals(currentEvent.getLocation())) {
+        if (prevEvent.getLocation() != null && !prevEvent.getLocation().equals(currentEvent.getLocation())) {
             diff.append("Event location changed").append(System.lineSeparator())
                 .append("\tfrom ")
                 .append(prevEvent.getLocation().getName()).append(System.lineSeparator())
@@ -185,14 +185,14 @@ public class EventService {
         if (!prevEvent.getUsers().equals(currentEvent.getUsers())) {
             for(User user : prevEvent.getUsers()) {
                 if(!currentEvent.getUsers().contains(user)) {
-                    diff.append(user.getUsername())
+                    diff.append(user.getName())
                         .append(" has been removed")
                         .append(System.lineSeparator());
                 }
             }
             for(User user : currentEvent.getUsers()) {
                 if(!prevEvent.getUsers().contains(user)) {
-                    diff.append(user.getUsername())
+                    diff.append(user.getName())
                             .append(" has been added")
                             .append(System.lineSeparator());
                 }
@@ -237,8 +237,8 @@ public class EventService {
         if(!StringUtils.isEmpty(email)) {
             Event prevEvent = repository.findOne(event.getId());
             String emailBody = new StringBuilder()
-                    .append("Hello ").append(receiver.getUsername()).append(System.lineSeparator())
-                    .append("Event was changed by ").append(author.getUsername()).append(System.lineSeparator())
+                    .append("Hello ").append(receiver.getName()).append(System.lineSeparator())
+                    .append("Event was changed by ").append(author.getName()).append(System.lineSeparator())
                     .append(generateDiff(event, prevEvent)).toString();
             mailHelper.sendMail(email, "Event was updated", emailBody);
         }
@@ -262,8 +262,8 @@ public class EventService {
         String email = receiver.getEmail();
         if(!StringUtils.isEmpty(email)) {
             String emailBody = new StringBuilder()
-                    .append("Hello ").append(receiver.getUsername()).append(System.lineSeparator())
-                    .append("Event was deleted by ").append(author.getUsername()).append(System.lineSeparator())
+                    .append("Hello ").append(receiver.getName()).append(System.lineSeparator())
+                    .append("Event was deleted by ").append(author.getName()).append(System.lineSeparator())
                     .append("Its title was ").append(event.getTitle()).toString();
             mailHelper.sendMail(email, "Event was updated", emailBody);
         }

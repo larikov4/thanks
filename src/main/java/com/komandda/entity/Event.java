@@ -3,8 +3,8 @@ package com.komandda.entity;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.komandda.entity.json.DateWithoutTimeZoneJsonDeserializer;
-import com.komandda.entity.json.DateWithoutTimeZoneJsonSerializer;
+import com.komandda.entity.json.datetime.DateTimeJsonDeserializer;
+import com.komandda.entity.json.datetime.DateTimeJsonSerializer;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
@@ -67,8 +67,8 @@ public class Event {
     }
 
     //    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm", timezone = "Europe/Kiev")
-    @JsonDeserialize(using = DateWithoutTimeZoneJsonDeserializer.class)
-    @JsonSerialize(using = DateWithoutTimeZoneJsonSerializer.class)
+    @JsonDeserialize(using = DateTimeJsonDeserializer.class)
+    @JsonSerialize(using = DateTimeJsonSerializer.class)
     public Date getStart() {
         return start;
     }
@@ -78,8 +78,8 @@ public class Event {
     }
 
 //    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm", timezone = "Europe/Kiev")
-    @JsonDeserialize(using = DateWithoutTimeZoneJsonDeserializer.class)
-    @JsonSerialize(using = DateWithoutTimeZoneJsonSerializer.class)
+    @JsonDeserialize(using = DateTimeJsonDeserializer.class)
+    @JsonSerialize(using = DateTimeJsonSerializer.class)
     public Date getEnd() {
         return end;
     }

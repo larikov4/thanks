@@ -837,4 +837,15 @@ label.error {
 .jsgrid-table td, .jsgrid-header-row th {
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.jsgrid-table td:hover, .jsgrid-header-row th:hover {
+    text-overflow: clip;
+    white-space: normal;
+    overflow-x: auto;
+}
+
+.ui-datepicker-year {
+    color:black;
 }

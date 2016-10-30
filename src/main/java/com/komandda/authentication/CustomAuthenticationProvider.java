@@ -24,7 +24,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 	      String password = (String) authentication.getCredentials();
 		  User user = userService.findOne(username, password);
 	 
-		  if (user == null) {
+		  if (user == null || user.isDeleted()) {
 	          throw new BadCredentialsException("User was not found.");
 	      }
 

@@ -1,15 +1,21 @@
 package com.komandda.entity;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Objects;
+import com.komandda.entity.json.date.DateJsonDeserializer;
+import com.komandda.entity.json.date.DateJsonSerializer;
 import org.springframework.data.annotation.Id;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 /**
  * @author Yevhen_Larikov
  */
+@JsonAutoDetect
 public class User implements UserDetails {
 
     @Id
@@ -18,6 +24,14 @@ public class User implements UserDetails {
     private String username;
 
     private String password;
+
+    private String name;
+
+    private String phone;
+
+    @JsonDeserialize(using = DateJsonDeserializer.class)
+    @JsonSerialize(using = DateJsonSerializer.class)
+    private Date birthday;
 
     private String email;
 
@@ -55,6 +69,30 @@ public class User implements UserDetails {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public Date getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(Date birthday) {
+        this.birthday = birthday;
     }
 
     public String getEmail() {
@@ -131,7 +169,7 @@ public class User implements UserDetails {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equal(username, user.username);
+        return Objects.equal(id, user.id);
     }
 
     @Override
