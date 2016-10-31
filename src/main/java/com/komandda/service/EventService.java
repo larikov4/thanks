@@ -57,7 +57,8 @@ public class EventService {
     }
 
     public Event save(Event event, User author) {
-        sendUpdatingEventEmail(event, author);
+        Event prevEvent = repository.findOne(event.getId());
+        sendUpdatingEventEmail(event, prevEvent, author);
         setEmptyEquipmentListIfAbsent(event);
         Event savedEvent = repository.save(event);
 
@@ -217,30 +218,30 @@ public class EventService {
         return diff.toString();
     }
 
-    private void sendUpdatingEventEmail(final Event event, final User author) {
+    private void sendUpdatingEventEmail(final Event event, final Event prevEvent, final User author) {
         new Thread(){
             @Override
             public void run() {
                 for(User user : event.getUsers()) {
-                    sendUpdatingEventEmail(event, author, user);
+                    if(!user.equals(author)) {
+                        sendUpdatingEventEmail(event, prevEvent, author, user);
+                    }
                 }
-                if(!event.getUsers().contains(event.getAuthor())) {
-                    sendUpdatingEventEmail(event, author, event.getAuthor());
-                }
-
             }
         }.start();
     }
 
-    private void sendUpdatingEventEmail(Event event, User author, User receiver) {
+    private void sendUpdatingEventEmail(Event event, Event prevEvent, User author, User receiver) {
         String email = receiver.getEmail();
         if(!StringUtils.isEmpty(email)) {
-            Event prevEvent = repository.findOne(event.getId());
-            String emailBody = new StringBuilder()
-                    .append("Hello ").append(receiver.getName()).append(System.lineSeparator())
-                    .append("Event was changed by ").append(author.getName()).append(System.lineSeparator())
-                    .append(generateDiff(event, prevEvent)).toString();
-            mailHelper.sendMail(email, "Event was updated", emailBody);
+            String diff = generateDiff(event, prevEvent);
+            if(!StringUtils.isEmpty(diff)){
+                String emailBody = new StringBuilder()
+                        .append("Hello ").append(receiver.getName()).append(System.lineSeparator())
+                        .append("Event was changed by ").append(author.getName()).append(System.lineSeparator())
+                        .append(diff).toString();
+                mailHelper.sendMail(email, "Event was updated", emailBody);
+            }
         }
     }
 
