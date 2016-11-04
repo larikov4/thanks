@@ -5,9 +5,14 @@ import com.komandda.entity.EventChangeItem;
 import com.komandda.entity.Event;
 import com.komandda.entity.User;
 import com.komandda.repository.EventRepository;
-import com.komandda.service.mail.MailHelper;
+import com.komandda.service.email.sender.EmailSender;
+import com.komandda.service.email.template.EmailTemplate;
+import com.komandda.service.email.template.EventCreationEmailTemplate;
+import com.komandda.service.email.template.EventDeletingEmailTemplate;
+import com.komandda.service.email.template.EventUpdatingEmailTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.text.SimpleDateFormat;
@@ -33,7 +38,7 @@ public class EventService {
     private EventChangelogService changelog;
 
     @Autowired
-    private MailHelper mailHelper;
+    private EmailSender emailSender;
 
 
     public List<Event> findAll() {
@@ -45,8 +50,10 @@ public class EventService {
     }
 
     public Event insert(Event event, User author) {
-        event.setCreated(new Date());
         setEmptyEquipmentListIfAbsent(event);
+        sendCreationEventEmail(event, author);
+
+        event.setCreated(new Date());
         Event eventWithId = repository.insert(event);
 
         hidePassword(eventWithId);
@@ -58,7 +65,7 @@ public class EventService {
 
     public Event save(Event event, User author) {
         Event prevEvent = repository.findOne(event.getId());
-        sendUpdatingEventEmail(event, prevEvent, author);
+        sendUpdatingEventEmail(event,author, prevEvent);
         setEmptyEquipmentListIfAbsent(event);
         Event savedEvent = repository.save(event);
 
@@ -97,7 +104,7 @@ public class EventService {
 
     private void setEmptyEquipmentListIfAbsent(Event event) {
         if(event.getEquipment() == null) {
-            event.setEquipment(Collections.<Equipment>emptyList());
+            event.setEquipment(Collections.emptyList());
         }
     }
 
@@ -114,163 +121,37 @@ public class EventService {
         return event;
     }
 
-    private void sendCreationEventEmail(Event event) {
-        StringBuilder eventBuilder = new StringBuilder();
-        eventBuilder.append("Title ").append(event.getTitle()).append(System.lineSeparator())
-                .append("Description ").append(event.getDescription()).append(System.lineSeparator())
-                .append("Date ").append(format(event.getStart())).append(" to ").append(format(event.getEnd())).append(System.lineSeparator())
-                .append("Author ").append(event.getAuthor().getName()).append(System.lineSeparator())
-                .append("Location ").append(event.getLocation().getName()).append(System.lineSeparator());
-        eventBuilder.append("Users: ").append(System.lineSeparator());
-        for(User user : event.getUsers()) {
-            eventBuilder.append("\t").append(user.getName()).append(System.lineSeparator());
-        }
-
-        eventBuilder.append("Equipment: ").append(System.lineSeparator());
-        for(Equipment equipment : event.getEquipment()) {
-            eventBuilder.append("\t").append(equipment.getName()).append(System.lineSeparator());
-        }
-
-        String createdEvent = eventBuilder.toString();
-
-        for(User user : event.getUsers()) {
-            String email = user.getEmail();
-            if(!StringUtils.isEmpty(email)) {
-                String emailBody = new StringBuilder()
-                        .append("Hello ").append(user.getName()).append(System.lineSeparator())
-                        .append("New event was created.").append(System.lineSeparator())
-                        .append(createdEvent).toString();
-                mailHelper.sendMail(email, "New event created", emailBody);
-            }
-        }
+    private void sendCreationEventEmail(Event event, User author) {
+        EmailTemplate template = new EventCreationEmailTemplate(event, author);
+        emailSender.send(provideEmailReceivers(event, author), template);
     }
 
-
-    private String generateDiff(Event currentEvent, Event prevEvent) {
-        StringBuilder diff = new StringBuilder();
-        if (!prevEvent.getTitle().equals(currentEvent.getTitle())) {
-            diff.append("Title changed").append(System.lineSeparator())
-                .append("\tfrom ")
-                .append(prevEvent.getTitle()).append(System.lineSeparator())
-                .append("\tto ")
-                .append(currentEvent.getTitle()).append(System.lineSeparator());
-        }
-        if (!prevEvent.getDescription().equals(currentEvent.getDescription())) {
-            diff.append("Description changed").append(System.lineSeparator())
-                    .append("\tfrom ")
-                    .append(prevEvent.getDescription()).append(System.lineSeparator())
-                    .append("\tto ")
-                    .append(currentEvent.getDescription()).append(System.lineSeparator());
-        }
-        if (!prevEvent.getStart().equals(currentEvent.getStart())) {
-            diff.append("Event start changed").append(System.lineSeparator())
-                .append("\tfrom ")
-                .append(format(prevEvent.getStart())).append(System.lineSeparator())
-                .append("\tto ")
-                .append(format(currentEvent.getStart())).append(System.lineSeparator());
-        }
-        if (!prevEvent.getEnd().equals(currentEvent.getEnd())) {
-            diff.append("Event end changed").append(System.lineSeparator())
-                .append("\tfrom ")
-                .append(format(prevEvent.getEnd())).append(System.lineSeparator())
-                .append("\tto ")
-                .append(format(currentEvent.getEnd())).append(System.lineSeparator());
-        }
-        if (prevEvent.getLocation() != null && !prevEvent.getLocation().equals(currentEvent.getLocation())) {
-            diff.append("Event location changed").append(System.lineSeparator())
-                .append("\tfrom ")
-                .append(prevEvent.getLocation().getName()).append(System.lineSeparator())
-                .append("\tto ")
-                .append(currentEvent.getLocation().getName()).append(System.lineSeparator());
-        }
-        if (!prevEvent.getUsers().equals(currentEvent.getUsers())) {
-            for(User user : prevEvent.getUsers()) {
-                if(!currentEvent.getUsers().contains(user)) {
-                    diff.append(user.getName())
-                        .append(" has been removed")
-                        .append(System.lineSeparator());
-                }
-            }
-            for(User user : currentEvent.getUsers()) {
-                if(!prevEvent.getUsers().contains(user)) {
-                    diff.append(user.getName())
-                            .append(" has been added")
-                            .append(System.lineSeparator());
-                }
-            }
-        }
-        if (!prevEvent.getEquipment().equals(currentEvent.getEquipment())) {
-            for (Equipment equipment : prevEvent.getEquipment()) {
-                if (!currentEvent.getEquipment().contains(equipment)) {
-                    diff.append(equipment.getName())
-                            .append(" has been removed")
-                            .append(System.lineSeparator());
-                }
-            }
-            for (Equipment equipment : currentEvent.getEquipment()) {
-                if (!prevEvent.getEquipment().contains(equipment)) {
-                    diff.append(equipment.getName())
-                            .append(" has been added")
-                            .append(System.lineSeparator());
-                }
-            }
-        }
-        return diff.toString();
+    private void sendUpdatingEventEmail(Event event, User author, Event prevEvent) {
+        EmailTemplate template = new EventUpdatingEmailTemplate(event, author, prevEvent);
+        emailSender.send(provideEmailReceivers(event, author, prevEvent), template);
     }
 
-    private void sendUpdatingEventEmail(final Event event, final Event prevEvent, final User author) {
-        new Thread(){
-            @Override
-            public void run() {
-                for(User user : event.getUsers()) {
-                    if(!user.equals(author)) {
-                        sendUpdatingEventEmail(event, prevEvent, author, user);
-                    }
-                }
-            }
-        }.start();
+    private void sendDeletingEventEmail(Event event, User author) {
+        EmailTemplate template = new EventDeletingEmailTemplate(event, event.getAuthor());
+        emailSender.send(provideEmailReceivers(event, author), template);
     }
 
-    private void sendUpdatingEventEmail(Event event, Event prevEvent, User author, User receiver) {
-        String email = receiver.getEmail();
-        if(!StringUtils.isEmpty(email)) {
-            String diff = generateDiff(event, prevEvent);
-            if(!StringUtils.isEmpty(diff)){
-                String emailBody = new StringBuilder()
-                        .append("Hello ").append(receiver.getName()).append(System.lineSeparator())
-                        .append("Event was changed by ").append(author.getName()).append(System.lineSeparator())
-                        .append(diff).toString();
-                mailHelper.sendMail(email, "Event was updated", emailBody);
-            }
+    private Collection<User> provideEmailReceivers(Event event, User author) {
+        Collection<User> users = new ArrayList<>(event.getUsers());
+        if(!users.contains(event.getAuthor())) {
+            users.add(event.getAuthor());
         }
+        users.remove(author);
+        return users;
     }
 
-    private void sendDeletingEventEmail(final Event event, final User author) {
-        new Thread(){
-            @Override
-            public void run() {
-                for (User user : event.getUsers()) {
-                    sendDeletingEventEmail(event, author, user);
-                }
-                if (!event.getUsers().contains(event.getAuthor())) {
-                    sendDeletingEventEmail(event, author, event.getAuthor());
-                }
-            }
-        }.start();
-    }
-
-    private void sendDeletingEventEmail(Event event, User author, User receiver) {
-        String email = receiver.getEmail();
-        if(!StringUtils.isEmpty(email)) {
-            String emailBody = new StringBuilder()
-                    .append("Hello ").append(receiver.getName()).append(System.lineSeparator())
-                    .append("Event was deleted by ").append(author.getName()).append(System.lineSeparator())
-                    .append("Its title was ").append(event.getTitle()).toString();
-            mailHelper.sendMail(email, "Event was updated", emailBody);
+    private Collection<User> provideEmailReceivers(Event event, User author, Event prevEvent) {
+        Collection<User> users = new HashSet<>(event.getUsers());
+        users.addAll(prevEvent.getUsers());
+        if(!users.contains(event.getAuthor())) {
+            users.add(event.getAuthor());
         }
-    }
-
-    private String format(Date date) {
-        return DATE_FORMATTER.format(date);
+        users.remove(author);
+        return users;
     }
 }
