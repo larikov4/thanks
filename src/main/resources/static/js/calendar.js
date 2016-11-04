@@ -149,13 +149,19 @@ $(document).ready(function() {
 		wasModalSubmitted = true;
     });
 
-    fillSelect($('#filter-location'), [' '].concat(Object.keys(repo.locations)))
-    fillSelect($('#filter-user'), Object.keys(repo.users))
-    fillSelect($('#filter-camera'), Object.keys(repo.camera))
-    fillSelect($('#filter-lens'), Object.keys(repo.lens))
-    fillSelect($('#filter-light'), Object.keys(repo.light))
-    fillSelect($('#filter-sound'), Object.keys(repo.sound))
-    fillSelect($('#filter-accessory'), Object.keys(repo.accessory))
+    fillSelect($('#filter-location'), filterDeletedByName([' '].concat(Object.keys(repo.locations))));
+    fillSelect($('#filter-user'), filterDeletedByName(Object.keys(repo.users)));
+    fillSelect($('#filter-camera'), filterDeletedByName(Object.keys(repo.camera)));
+    fillSelect($('#filter-lens'), filterDeletedByName(Object.keys(repo.lens)));
+    fillSelect($('#filter-light'), filterDeletedByName(Object.keys(repo.light)));
+    fillSelect($('#filter-sound'), filterDeletedByName(Object.keys(repo.sound)));
+    fillSelect($('#filter-accessory'), filterDeletedByName(Object.keys(repo.accessory)));
+
+    function filterDeletedByName(items){
+        return items.filter(function(item){
+            return !item.contains("(deleted)");
+        })
+    }
 
     $('#filter-location, #filter-user, #filter-camera, #filter-lens, #filter-light, #filter-sound, #filter-accessory')
         .on('change', function(){
