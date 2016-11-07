@@ -669,7 +669,11 @@ $(document).ready(function() {
 					title:event.title + '<button type="button" class="close" data-dismiss="popover-container"><span>x</span></button>',
 					html: true,
 					animation:true,
-					placement:'auto left',
+					placement:function(popover, event){
+                        var leftOffset = this.getPosition().left
+                        var popoverWidth = 250 + 50;
+					    return $('#calendar').width() - leftOffset > popoverWidth ? 'right' : 'left';
+                    },
 					content: function() {
 						function clearPopover() {
 							$('.popover').popover('hide');
