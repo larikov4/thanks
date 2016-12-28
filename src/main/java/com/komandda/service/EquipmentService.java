@@ -20,6 +20,9 @@ public class EquipmentService {
     @Autowired
     private FreeEntitiesService freeEntitiesService;
 
+    @Autowired
+    private FreeSeriesEntitiesService freeSeriesEntitiesService;
+
     public List<Equipment> findAll() {
         return repository.findAll();
     }
@@ -47,5 +50,9 @@ public class EquipmentService {
 
     public List<Equipment> getFree(Date start, Date end, String id){
         return freeEntitiesService.getFreeEquipment(start, end, id);
+    }
+
+    public List<Equipment> getSeriesFree(Date start, Date end, String seriesId){
+        return freeSeriesEntitiesService.getFreeEquipment(start, end, seriesId);
     }
 }

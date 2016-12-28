@@ -28,6 +28,8 @@ public class Event {
 
     private Date end;
 
+    private String seriesId;
+
     @DBRef
     private User author;
 
@@ -41,6 +43,23 @@ public class Event {
     private Location location;
 
     private Date created;
+
+    public Event() {
+    }
+
+    public Event(Event event) {
+        this.id = event.id;
+        this.title = event.title;
+        this.description = event.description;
+        this.start = event.start;
+        this.end = event.end;
+        this.seriesId = event.seriesId;
+        this.author = event.author;
+        this.equipment = event.equipment;
+        this.users = event.users;
+        this.location = event.location;
+        this.created = event.created;
+    }
 
     public String getId() {
         return id;
@@ -88,6 +107,14 @@ public class Event {
         this.end = end;
     }
 
+    public String getSeriesId() {
+        return seriesId;
+    }
+
+    public void setSeriesId(String seriesId) {
+        this.seriesId = seriesId;
+    }
+
     public User getAuthor() {
         return author;
     }
@@ -133,12 +160,15 @@ public class Event {
         return "Event{" +
                 "id='" + id + '\'' +
                 ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
                 ", start=" + start +
                 ", end=" + end +
+                ", seriesId='" + seriesId + '\'' +
                 ", author=" + author +
                 ", equipment=" + equipment +
                 ", users=" + users +
                 ", location=" + location +
+                ", created=" + created +
                 '}';
     }
 }

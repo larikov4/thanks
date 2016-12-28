@@ -67,11 +67,3 @@ function mapEquipmentType(equipment) {
         return item;
     })
 }
-//	bootbox.confirm({
-//		size: 'small',
-//		className: 'confirmation',
-//		message: 'Are you sure?',
-//		callback: function(result) {
-//			console.log(result);
-//		}
-//	});

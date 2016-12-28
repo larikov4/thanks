@@ -51,7 +51,9 @@ public class EventService {
 
     public Event insert(Event event, User author) {
         setEmptyEquipmentListIfAbsent(event);
-        sendCreationEventEmail(event, author);
+        if(event.getSeriesId()==null){
+            sendCreationEventEmail(event, author);
+        }
 
         event.setCreated(new Date());
         Event eventWithId = repository.insert(event);
@@ -65,7 +67,9 @@ public class EventService {
 
     public Event save(Event event, User author) {
         Event prevEvent = repository.findOne(event.getId());
-        sendUpdatingEventEmail(event,author, prevEvent);
+        if(event.getSeriesId()==null) {
+            sendUpdatingEventEmail(event, author, prevEvent);
+        }
         setEmptyEquipmentListIfAbsent(event);
         Event savedEvent = repository.save(event);
 
@@ -78,7 +82,9 @@ public class EventService {
 
     public Event delete(Event event, User author) {
         repository.delete(event);
-        sendDeletingEventEmail(event, author);
+        if(event.getSeriesId()==null) {
+            sendDeletingEventEmail(event, author);
+        }
         return hidePassword(event);
     }
 

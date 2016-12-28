@@ -55,4 +55,9 @@ public class EquipmentController {
     public List<Equipment> getFree(String start, String end, String id) throws ParseException {
         return service.getFree(SIMPLE_DATE_FORMAT.parse(start), SIMPLE_DATE_FORMAT.parse(end), id);
     }
+
+    @RequestMapping(value = "/series/free", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<Equipment> getSeriesFree(String start, String end, String seriesId) throws ParseException {
+        return service.getSeriesFree(SIMPLE_DATE_FORMAT.parse(start), SIMPLE_DATE_FORMAT.parse(end), seriesId);
+    }
 }

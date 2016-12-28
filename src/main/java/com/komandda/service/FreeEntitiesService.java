@@ -4,6 +4,7 @@ import com.komandda.entity.Equipment;
 import com.komandda.entity.Event;
 import com.komandda.entity.Location;
 import com.komandda.entity.User;
+import com.komandda.service.helper.DateHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +33,6 @@ public class FreeEntitiesService {
 
     private final Logger logger = LoggerFactory.getLogger(FreeEntitiesService.class);
 
-//    private final int fourHours = 1000 * 60 * 60 * 4;
-
     private List<Event> getActiveEvents(Date start, Date end, String id) {
         List<Event> activeEvents = new ArrayList<>();
 
@@ -55,15 +54,6 @@ public class FreeEntitiesService {
         logger.info("Active events:" + activeEvents.toString());
         return activeEvents;
     }
-
-//    private List<Event> getEvents() {
-//        List<Event> all = eventService.findByDeletedFalse();
-//        for(Event event : all){
-//            event.setStart(new Date(event.getStart().getTime() + fourHours));
-//            event.setEnd(new Date(event.getEnd().getTime() + fourHours));
-//        }
-//        return all;
-//    }
 
     public List<Location> getFreeLocations(final Date start, final Date end, String id){
         List<Location> locations = locationService.findByDeletedFalse();

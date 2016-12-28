@@ -22,7 +22,8 @@ $(document).ready(function() {
 	var currentUser;
 	var currentFilter;
 	var movingEvent = null;
-	var REST_URL = "/rest/events";
+	var EVENT_REST_URL = "/rest/events";
+	var SERIES_REST_URL = "/rest/series";
 	var wasModalSubmitted = false;
 
     function mapEquipmentType(equipment) {
@@ -94,11 +95,10 @@ $(document).ready(function() {
         for(var i=0;i<USERS.length;i++) {
             var birthday = USERS[i].birthday;
             if(birthday){
-                var currentYear = moment(new Date()).year();
                 birthdayEvents.push({
                     title: "Birthday of " + USERS[i].name,
-                    start:moment(birthday).add(8, 'hours').year(currentYear),//TODO
-                    end:moment(birthday).add(18, 'hours').year(currentYear),
+                    start:moment(birthday).add(8, 'hours').year(getNearestYear(birthday)),
+                    end:moment(birthday).add(18, 'hours').year(getNearestYear(birthday)),
                     id: 'birthday' + i,
                     author: {
                         name:currentUser.name
@@ -107,6 +107,29 @@ $(document).ready(function() {
             }
         }
         $('#calendar').fullCalendar('addEventSource', birthdayEvents);
+
+        function getNearestYear(birthday){
+            var currentDate = new Date();
+            var currentYear = moment(currentDate).year();
+
+            var prevYearDate = moment(birthday).year(currentYear-1).valueOf();
+            var yearDate = moment(birthday).year(currentYear).valueOf();
+            var nextYearDate = moment(birthday).year(currentYear+1).valueOf();
+
+            var prevYearDateDiff = Math.abs(currentDate.valueOf() - prevYearDate.valueOf());
+            var yearDateDiff = Math.abs(currentDate.valueOf() - yearDate.valueOf());
+            var nextYearDateDiff = Math.abs(currentDate.valueOf() - nextYearDate.valueOf());
+
+            if(prevYearDateDiff < yearDateDiff && prevYearDateDiff < nextYearDateDiff){
+                return moment(birthday).year(currentYear-1).year();
+            }
+            if(nextYearDateDiff < yearDateDiff && nextYearDateDiff < prevYearDateDiff){
+                return moment(birthday).year(currentYear+1).year();
+            }
+            if(yearDateDiff < prevYearDateDiff && yearDateDiff < nextYearDateDiff){
+                return moment(birthday).year(currentYear).year();
+            }
+        }
     }
 
 
@@ -144,7 +167,7 @@ $(document).ready(function() {
     })();
 
     $('#save').on('click', function(){
-        toastr.clear();
+        toastr.remove();
         $(".modal-edit .modal-body form").submit();
 		wasModalSubmitted = true;
     });
@@ -173,7 +196,7 @@ $(document).ready(function() {
             mapIdsAndNames(data);
             currentFilter = data;
             console.log(data);
-            var url = isEmptyFilter(data) ? REST_URL : REST_URL + "/filter";
+            var url = isEmptyFilter(data) ? EVENT_REST_URL : EVENT_REST_URL + "/filter";
             performFilerRequest(data, url);
     });
 
@@ -229,6 +252,7 @@ $(document).ready(function() {
         data.description = $container.find('#description').val();
         data.start = $container.find('#start-date').val() + "T" + $('#start-time').val();
         data.end = $container.find('#end-date').val() + "T" + $container.find('#end-time').val();
+        data.isSeries = $("#series").prop('checked');
         fetchUser($container, data);
         if($("#recording").prop('checked')) {
             fetchLocationAndEquipment($container, data);
@@ -284,65 +308,92 @@ $(document).ready(function() {
         return equipment;
     }
 
+    function fillSelectsIfFieldsIsReady(){
+        if($('#start-time').select2('val')!=='0:00' && $('#end-time').select2('val')!=='0:00'
+            && $('#start-time').select2('val') !== $('#end-time').select2('val')){
+            var isSeries = $("#series").prop('checked');
+            fillSelects(isSeries);
+        }
+    }
+
+    $("#series").on('change.radiocheck', function(){
+		fillSelectsIfFieldsIsReady();
+    });
+
     $('.date, .time').on('change', function(){
-		if($('#start-time').select2('val')!=='0:00' && $('#end-time').select2('val')!=='0:00'
-			&& $('#start-time').select2('val') !== $('#end-time').select2('val')){
-			fillSelects();
-		}
+		fillSelectsIfFieldsIsReady();
 	});
 
 	function hasAnyBusyResource(param){
 		var event = param.event;
-		var data = {
-			start: event.start.format('YYYY-MM-DD') + "T" + padTime(event.start),
-			end: event.end.format('YYYY-MM-DD') + "T" + padTime(event.end),
-			id: event.id
-		};
-		var isBusy = false;
-		$.when(
-			$.ajax({
-				type: "GET",
-				url: "/rest/locations/free",
-				data:data,
-				success: function(data){
-					if(event.location && !mapNames(data).contains(event.location.name)){
-						isBusy = true;
-						toastr["warning"](event.location.name + " is busy");
-					}
-				}
-			}),
-			$.ajax({
-				type: "GET",
-				url: "/rest/equipment/free",
-				data:data,
-				success: function(data){
-					var busy = filterBusy(mapNames(fetchGroupedEquipment(event)), mapNames(data));
-					if(busy.length > 0) {
-						isBusy = true;
-						toastr["warning"](busy.toString() + " is busy");
-					}
-				}
-			}),
-			$.ajax({
-				type: "GET",
-				url: "/rest/users/free",
-				data:data,
-				success: function(data){
-					var busy = filterBusy(mapNames(event.users), mapNames(data));
-					if(busy.length > 0) {
-						isBusy = true;
-						toastr["warning"](busy.toString() + " is busy");
-					}
-				}
-			})
-		).then(function(){
-			if(isBusy){
-				param.busy();
-			} else {
-				param.free(event);
-			}
-		});
-	}
+		if(event.seriesId){
+            seriesOrSingleEventEdit()
+                .done(function(result){
+                    var urlFreeSuffix = result === "series" ? "/series/free" : "/free";
+                    var urlUpdateSuffix = result === "series" ? SERIES_REST_URL : EVENT_REST_URL;
+                    sendRequest(urlFreeSuffix, urlUpdateSuffix, "seriesId");
+                })
+                .fail(function(){
+                    param.busy();
+                })
+		} else {
+		    sendRequest("/free", EVENT_REST_URL, "id");
+		}
+
+
+		function sendRequest(urlFreeSuffix, urlUpdateSuffix, idName) {
+		    var isBusy = false;
+
+            var data = {
+                start: event.start.format('YYYY-MM-DD') + "T" + padTime(event.start),
+                end: event.end.format('YYYY-MM-DD') + "T" + padTime(event.end)
+            };
+            data[idName] = event[idName];
+		    $.when(
+                $.ajax({
+                    type: "GET",
+                    url: "/rest/locations" + urlFreeSuffix,
+                    data:data,
+                    success: function(data){
+                        if(event.location && !mapNames(data).contains(event.location.name)){
+                            isBusy = true;
+                            toastr["warning"](event.location.name + " is busy");
+                        }
+                    }
+                }),
+                $.ajax({
+                    type: "GET",
+                    url: "/rest/equipment" + urlFreeSuffix,
+                    data:data,
+                    success: function(data){
+                        var busy = filterBusy(mapNames(fetchGroupedEquipment(event)), mapNames(data));
+                        if(busy.length > 0) {
+                            isBusy = true;
+                            toastr["warning"](busy.toString() + " is busy");
+                        }
+                    }
+                }),
+                $.ajax({
+                    type: "GET",
+                    url: "/rest/users" + urlFreeSuffix,
+                    data:data,
+                    success: function(data){
+                        var busy = filterBusy(mapNames(event.users), mapNames(data));
+                        if(busy.length > 0) {
+                            isBusy = true;
+                            toastr["warning"](busy.toString() + " is busy");
+                        }
+                    }
+                })
+            ).then(function(){
+                if(isBusy){
+                    param.busy();
+                } else {
+                    param.free(event, urlUpdateSuffix);
+                }
+            });
+		}
+    }
 
     function toggleRecordingCheckbox(checked) {
         if(checked) {
@@ -352,17 +403,20 @@ $(document).ready(function() {
         }
     }
 
-	function fillSelects(){
+	function fillSelects(isSeries){
+	    var urlFreeSuffix = isSeries ? "/series/free" : "/free";
+	    var idName = isSeries ? "seriesId" : "id";
 		var ajaxCounter = 0;
 	    toggleRecordingCheckbox(currentEvent && currentEvent.location);
+	    var data = {
+            start:$('#start-date').val() + "T" + $('#start-time').val(),
+            end:$('#end-date').val() + "T" + $('#end-time').val()
+        }
+	    data[idName] = currentEvent ? currentEvent[idName] : '';
 		$.ajax({
 			type: "GET",
-			url: "/rest/locations/free",
-			data:{
-				start:$('#start-date').val() + "T" + $('#start-time').val(),
-				end:$('#end-date').val() + "T" + $('#end-time').val(),
-				id: currentEvent ? currentEvent.id : ''
-			},
+			url: "/rest/locations" + urlFreeSuffix,
+			data: data,
 			success: function(data){
 				ajaxCounter++;
 				var $select = $('.modal-edit').find('#location');
@@ -370,7 +424,7 @@ $(document).ready(function() {
 				var additionalValues = currentEvent && currentEvent.location ? [currentEvent.location] : [];
 				prepareSelect(data, 'name', Object.keys(repo.locations), 'location', additionalValues);
 				if(prev){
-					$select.val(prev);
+					$select.select2('val', prev);
 				}
 				if(currentEvent && currentEvent.location){
 					$select.select2('val', currentEvent.location.name);
@@ -387,12 +441,8 @@ $(document).ready(function() {
 
 		$.ajax({
 			type: "GET",
-			url: "/rest/equipment/free",
-			data:{
-				start:$('#start-date').val() + "T" + $('#start-time').val(),
-				end:$('#end-date').val() + "T" + $('#end-time').val(),
-				id: currentEvent ? currentEvent.id : ''
-			},
+			url: "/rest/equipment" + urlFreeSuffix,
+			data: data,
 			success: function(data){
 				ajaxCounter++;
 				prepareEquipment('camera');
@@ -407,7 +457,7 @@ $(document).ready(function() {
                     var additionalValues = currentEvent ? currentEvent[type] : [];
                     prepareSelect(splitEquipment(equipmentContainer)[type], 'name', Object.keys(repo[type]), type, additionalValues);
                     if(prev){
-                        $select.val(prev);
+                        $select.select2('val', prev);
                     }
                     if(currentEvent) {
                         $select.select2('val', mapNames(currentEvent[type]));
@@ -425,12 +475,8 @@ $(document).ready(function() {
 
 		$.ajax({
 			type: "GET",
-			url: "/rest/users/free",
-			data:{
-                start:$('#start-date').val() + "T" + $('#start-time').val(),
-                end:$('#end-date').val() + "T" + $('#end-time').val(),
-				id: currentEvent? currentEvent.id : ''
-			},
+			url: "/rest/users" + urlFreeSuffix,
+			data: data,
 			success: function(data){
 				ajaxCounter++;
 				var $select = $('.modal-edit').find('#user');
@@ -438,7 +484,7 @@ $(document).ready(function() {
 				var additionalValues = currentEvent ? currentEvent.users : [];
 				prepareSelect(data, 'name', Object.keys(repo.userIds), 'user', additionalValues);
 				if(prev){
-					$select.val(prev);
+					$select.select2('val', prev);
 				}
 				if(currentEvent) {
 					$select.select2('val', currentEvent.users.map(function (user) {
@@ -486,15 +532,15 @@ $(document).ready(function() {
         for(var i=0;i<entities.length;i++) {
             $input.append(option.clone().val(entities[i]).html(entities[i]))
         }
-        $input.val('').addClass('multiselect-primary').removeClass('multiselect-default');
+        $input.select2("val", "").addClass('multiselect-primary').removeClass('multiselect-default');
     }
 
-	function updateEvent(event) {
+	function updateEvent(event, url) {
 		delete event.source;
 		event = groupEquipment(event);
 		$.ajax({
 			type: "PUT",
-			url: REST_URL,
+			url: url,
 			contentType: "application/json",
 			data: JSON.stringify(event)
 		}).success(function (data) {
@@ -576,11 +622,11 @@ $(document).ready(function() {
 		        if(duration>0) {
 		            movingEvent.start = movingEvent.startPoint;
                     movingEvent.end = date.add(30, 'minute');
-                    $('#calendar').fullCalendar('renderEvent', movingEvent);
+                    $('#calendar').fullCalendar('renderEvent', movingEvent, true);
 		        } else if(duration<-30) {
                     movingEvent.start = date;
                     movingEvent.end = movingEvent.startPoint;
-                    $('#calendar').fullCalendar('renderEvent', movingEvent);
+                    $('#calendar').fullCalendar('renderEvent', movingEvent, true);
                 } else {
                     movingEvent.start = movingEvent.startPoint;
                     movingEvent.end = movingEvent.startPoint;
@@ -737,15 +783,28 @@ $(document).ready(function() {
                                 }
 							}
 							$('body').on('click', '.editing', function() {
-								var $modal = $('.modal-edit');
-								$modal.find('#name').val(event.title);
-								$modal.find('#description').val(event.description);
-								$modal.find('#start-date').val(event.start.format('YYYY-MM-DD'));
-								$modal.find('#start-time').select2('val', event.start.hour() + ":" + padZero(event.start.minute()));
-								$modal.find('#end-date').val(event.end.format('YYYY-MM-DD'));
-								$modal.find('#end-time').select2('val', event.end.hour() + ":" + padZero(event.end.minute()));
-								fillSelects(event);
-								$modal.modal('show');
+							    function showFilledEditForm(isSeries) {
+                                    clearPopover();
+                                    var $modal = $('.modal-edit');
+                                    $modal.find('#name').val(event.title);
+                                    $modal.find('#description').val(event.description);
+                                    $modal.find('#start-date').val(event.start.format('YYYY-MM-DD'));
+                                    $modal.find('#start-time').select2('val', event.start.hour() + ":" + padZero(event.start.minute()));
+                                    $modal.find('#end-date').val(event.end.format('YYYY-MM-DD'));
+                                    $modal.find('#end-time').select2('val', event.end.hour() + ":" + padZero(event.end.minute()));
+                                    $modal.find("#series").prop('checked', isSeries);
+                                    $modal.find("#series").prop( "disabled", true );
+                                    fillSelects(isSeries);
+                                    $modal.modal('show');
+							    }
+							    if(!!event.seriesId){
+                                    seriesOrSingleEventEdit()
+                                        .done(function(result){
+                                            showFilledEditForm(result === "series");
+                                        })
+							    } else {
+                                    showFilledEditForm(false);
+							    }
 							});
 						}
 
@@ -778,13 +837,14 @@ $(document).ready(function() {
 		currentEvent = event;
 	}
 
-	function onSubmit(e){
+	function onSubmit(){
         var event = fetchEventFromForm();
+        var url = event.isSeries ? SERIES_REST_URL : EVENT_REST_URL;
 		if(!currentEvent){
 			event.author = currentUser;
 			$.ajax({
 				type: "POST",
-				url: REST_URL,
+				url: url,
 				contentType: "application/json",
 				data: JSON.stringify(event)
 			}).success(function(data){
@@ -796,9 +856,10 @@ $(document).ready(function() {
 			event.author = currentEvent.author;
 			event.created = currentEvent.created;
 			event.id = currentEvent.id;
+			event.seriesId = currentEvent.seriesId;
 			$.ajax({
 				type: "PUT",
-				url: REST_URL,
+				url: url,
 				contentType: "application/json",
 				data: JSON.stringify(event)
 			}).success(function (data) {
@@ -810,10 +871,18 @@ $(document).ready(function() {
 	}
 
 	$('body').on('click', 'button.delete', function(){
+        seriesOrSingleEventEdit()
+            .done(function(result){
+                var urlUpdateSuffix = result === "series" ? SERIES_REST_URL : EVENT_REST_URL;
+                deleteCurrentEvent(urlUpdateSuffix);
+            })
+	});
+
+	function deleteCurrentEvent(url) {
 		delete currentEvent.source;
 		$.ajax({
 			type: "DELETE",
-			url: REST_URL,
+			url: url,
 			contentType: "application/json",
 			data: JSON.stringify(currentEvent)
 		}).done(function(data){
@@ -822,7 +891,7 @@ $(document).ready(function() {
 		}).fail(function(e){
 			toastr["error"]("Server error #7. Please refresh the page.");
 		});
-	});
+	}
 
 	$('body').on('click', 'button.history', function(){
 		$.ajax({
@@ -838,9 +907,10 @@ $(document).ready(function() {
 					currentBubleContainer.append(bubbleTitle.clone().text(data[i].author.name + " " + dateStr));
 					var authorColor = repo.colors.users[data[i].author.name];
 					bubble.css('background-color', authorColor);
-					var diff = data[i].diff;//TODO description
+					var diff = data[i].diff;
 					currentBubleContainer
 						.append(diff.title === null ? '' : bubble.clone().text(diff.title))
+						.append(diff.description === null ? '' : bubble.clone().text(diff.description))//TODO
 						.append(diff.start === null ? '' : bubble.clone().text(diff.start.replace('T',' ')))
 						.append(diff.end === null ? '' : bubble.clone().text(diff.end.replace('T',' ')))
 						.append(diff.location === null ? '' : bubble.clone().text(diff.location.name))
@@ -861,7 +931,6 @@ $(document).ready(function() {
 	$('.modal-edit').on('hidden.bs.modal', function () {
 		clearPopup();
 		hideFormRightPart();
-		currentEvent = null;
 		wasModalSubmitted = false;
 	});
 
@@ -885,16 +954,15 @@ $(document).ready(function() {
 		$container.find('#light').select2('val', '');
 		$container.find('#accessory').select2('val', '');
 		$("form").validate().resetForm();
-
-		disableForm();
+		resetForm();
 	}
 
 	function resetForm(){
 		disableForm();
+		$("#recording").prop("checked", false);
+		$("#series").prop("checked", false);
+		$("#series").prop( "disabled", false);
 		currentEvent = null;
-		currentDate = null;
-		currentStartDate = null;
-		currentFinishDate = null;
 	}
 
 	function disableForm(){
@@ -957,15 +1025,6 @@ $(document).ready(function() {
         var duration = getDurationInMinutesByDates(firstDate, secondDate);
         return Math.floor(duration / 60) >= 1;
     }
-
-//    function getDurationInHours(firstTimeStr, secondTimeStr) {
-//        var duration = new Date('01/01/2011 ' + secondTimeStr).getTime() - new Date('01/01/2011 ' + firstTimeStr).getTime();
-//        return Math.floor(duration / 3600000);
-//    }
-//
-//	function isDurationMoreThanOrEqualsOneHour(firstTimeStr, secondTimeStr){
-//		return getDurationInHours(firstTimeStr, secondTimeStr) >= 1;
-//	}
 
 	(function addCustomValidatorMethods(){
 
@@ -1121,10 +1180,34 @@ $(document).ready(function() {
 
     $('body').on('click', '.popover .close', function(){
     	$('.popover').popover('hide');
+    	currentEvent = null;
     });
 
     $("select").select2({ dropdownCssClass : 'dropdown' });
     $("#recording").radiocheck();
+    $("#series").radiocheck();
+
+    function seriesOrSingleEventEdit() {
+        var dfd = jQuery.Deferred();
+        var $confirm = $('.modal-series');
+        $confirm.modal('show');
+        $('#series-event-edit').off('click').click(function () {
+            $confirm.modal('hide');
+            dfd.resolve("series");
+        });
+        $('#single-event-edit').off('click').click(function () {
+            $confirm.modal('hide');
+            dfd.resolve("single");
+        });
+        $('#cancel-event-edit').off('click').click(function () {
+            $confirm.modal('hide');
+            dfd.reject();
+        });
+        $confirm.on('hidden.bs.modal', function () {
+            dfd.reject();
+        })
+        return dfd.promise();
+    }
 
     $("#recording").on('change.radiocheck', function(){
         if($(this).prop('checked')){
@@ -1135,7 +1218,7 @@ $(document).ready(function() {
     });
 
     function showFormRightPart() {
-        $('.modal .modal-dialog').animate(
+        $('.modal-edit .modal-dialog').animate(
             { width:'848px' },
             {
                 duration: 200,
@@ -1149,7 +1232,7 @@ $(document).ready(function() {
 
     function hideFormRightPart() {
         $('.right-part').addClass('hidden-part');
-        $('.modal .modal-dialog').animate(
+        $('.modal-edit .modal-dialog').animate(
             { width:'426px' },
             {
                 duration: 200,
@@ -1201,21 +1284,30 @@ $(document).ready(function() {
         stompClient = Stomp.over(socket);
         stompClient.connect({}, function (frame) {
             stompClient.subscribe('/event/create', function (message) {
-                var createdEvent = JSON.parse(message.body);
-                if(isEmptyFilter(currentFilter) || doesSatisfyCurrentFilter(createdEvent)){
-                    $('#calendar').fullCalendar('renderEvent', splitEquipment(createdEvent));
+                var createdEvents = [].concat(JSON.parse(message.body));
+                for(var i=0; i < createdEvents.length; i++){
+                    var createdEvent = createdEvents[i];
+                    if(isEmptyFilter(currentFilter) || doesSatisfyCurrentFilter(createdEvent)){
+                        $('#calendar').fullCalendar('renderEvent', splitEquipment(createdEvent), true);
+                    }
                 }
             });
             stompClient.subscribe('/event/update', function (message) {
-                var updatedEvent = JSON.parse(message.body);
-                $('#calendar').fullCalendar('removeEvents', updatedEvent.id);
-                if(isEmptyFilter(currentFilter) || doesSatisfyCurrentFilter(updatedEvent)){
-                    $('#calendar').fullCalendar('renderEvent', splitEquipment(updatedEvent));
+                var updatedEvents = [].concat(JSON.parse(message.body));
+                for(var i=0; i < updatedEvents.length; i++){
+                    var updatedEvent = updatedEvents[i];
+                    if(isEmptyFilter(currentFilter) || doesSatisfyCurrentFilter(updatedEvent)){
+                        $('#calendar').fullCalendar('removeEvents', updatedEvent.id);
+                        $('#calendar').fullCalendar('renderEvent', splitEquipment(updatedEvent), true);
+                    }
                 }
             });
             stompClient.subscribe('/event/delete', function (message) {
-                var deletedEvent = JSON.parse(message.body);
-                $('#calendar').fullCalendar('removeEvents', deletedEvent.id);
+                var deletedEvents = [].concat(JSON.parse(message.body));
+                for(var i=0; i < deletedEvents.length; i++){
+                    var deletedEvent = deletedEvents[i];
+                    $('#calendar').fullCalendar('removeEvents', deletedEvent.id);
+                }
             });
         });
 

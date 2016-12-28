@@ -180,7 +180,7 @@
 											<select id="end-time" name="end-time" class="time form-control select select-primary select-block"></select>
 										</div>
 									</div>
-									<div class="form-group row">
+									<div class="form-group row user">
 										<label class="form-control-label">User:</label>
 										<div class="input-container">
 											<select id="user" name="user" multiple="multiple" class="form-control multiselect multiselect-primary select-primary">
@@ -192,6 +192,12 @@
 										<div class="input-container checkbox-container">
 											<label class="checkbox" for="recording">
 												<input type="checkbox" name="recording" id="recording"/>
+											</label>
+										</div>
+										<label class="form-control-label series">Series:</label>
+										<div class="input-container checkbox-container">
+											<label class="checkbox" for="series">
+												<input type="checkbox" name="series" id="series"/>
 											</label>
 										</div>
 									</div>
@@ -255,6 +261,22 @@
 					<div class="modal-body"></div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+
+		<div class="modal modal-series fade" tabindex="-1" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h5 class="modal-title">Which event should be edited?</h5>
+					</div>
+					<div class="modal-footer">
+						<button type="button" id="cancel-event-edit" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+						<button type="button" id="series-event-edit" class="btn btn-primary" data-dismiss="modal">This and the following series</button>
+						<button type="button" id="single-event-edit" class="btn btn-primary" data-dismiss="modal">Only this event</button>
 					</div>
 				</div><!-- /.modal-content -->
 			</div><!-- /.modal-dialog -->

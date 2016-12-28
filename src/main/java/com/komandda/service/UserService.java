@@ -20,6 +20,9 @@ public class UserService {
     @Autowired
     private FreeEntitiesService freeEntitiesService;
 
+    @Autowired
+    private FreeSeriesEntitiesService freeSeriesEntitiesService;
+
     public List<User> findAll() {
         return hidePassword(repository.findAll());
     }
@@ -51,6 +54,10 @@ public class UserService {
 
     public List<User> getFree(Date start, Date end, String id){
         return freeEntitiesService.getFreeUsers(start, end, id);
+    }
+
+    public List<User> getSeriesFree(Date start, Date end, String seriesId){
+        return freeSeriesEntitiesService.getFreeUsers(start, end, seriesId);
     }
 
     public List<User> hidePassword(List<User> users) {

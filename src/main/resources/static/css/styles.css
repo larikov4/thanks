@@ -317,7 +317,17 @@ a .fa-lg {
 
 .checkbox-container {
     position:relative;
+    width: 30px;
     height: 0;
+}
+
+label.form-control-label.series {
+    width:60px;
+    margin-left: 10px;
+}
+
+div.row.user {
+    height:52px;
 }
 
 .modal-body .row {
@@ -846,6 +856,22 @@ label.error {
     overflow-x: auto;
 }
 
-.ui-datepicker-year {
+.modal.modal-series .modal-dialog  {
+    width: 482px;
+}
+
+.modal.modal-series .modal-footer  {
+    padding: 15px;
+}
+
+.modal-series #cancel-event-edit {
+    margin-left: 0;
+}
+
+.ui-datepicker {
+    z-index: 2000!important;
+}
+
+select.ui-datepicker-year {
     color:black;
 }

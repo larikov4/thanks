@@ -20,6 +20,9 @@ public class LocationService {
     @Autowired
     private FreeEntitiesService freeEntitiesService;
 
+    @Autowired
+    private FreeSeriesEntitiesService freeSeriesEntitiesService;
+
     public List<Location> findAll() {
         return repository.findAll();
     }
@@ -47,5 +50,9 @@ public class LocationService {
 
     public List<Location> getFree(Date start, Date end, String id){
         return freeEntitiesService.getFreeLocations(start, end, id);
+    }
+
+    public List<Location> getSeriesFree(Date start, Date end, String seriesId){
+        return freeSeriesEntitiesService.getFreeLocations(start, end, seriesId);
     }
 }
