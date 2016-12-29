@@ -897,32 +897,107 @@ $(document).ready(function() {
 		$.ajax({
 			type: "GET",
 			url: "/rest/event/changelog/" + currentEvent.id,
-			success: function(data){
-				var bubble = $('<div>').addClass('bubble');
-				var bubbleTitle = $('<div>').addClass('title');
-				var bubbleContainer = $('<div>').addClass('bubble-container');
-				for(var i=0;i<data.length;i++){
-					var currentBubleContainer = bubbleContainer.clone();
-					var dateStr = moment(data[i].date).format('YYYY-MM-DD HH:mm');
-					currentBubleContainer.append(bubbleTitle.clone().text(data[i].author.name + " " + dateStr));
-					var authorColor = repo.colors.users[data[i].author.name];
-					bubble.css('background-color', authorColor);
-					var diff = data[i].diff;
-					currentBubleContainer
-						.append(diff.title === null ? '' : bubble.clone().text(diff.title))
-						.append(diff.description === null ? '' : bubble.clone().text(diff.description))//TODO
-						.append(diff.start === null ? '' : bubble.clone().text(diff.start.replace('T',' ')))
-						.append(diff.end === null ? '' : bubble.clone().text(diff.end.replace('T',' ')))
-						.append(diff.location === null ? '' : bubble.clone().text(diff.location.name))
-						.append(diff.users === null ? '' : bubble.clone().text(mapNames(diff.users).toString().replace(',', ', ')))
-						.append(diff.equipment === null ? '' :bubble.clone().text( mapNames(diff.equipment).toString().replace(',', ', ')));
-
-					$('.modal-history').find('.modal-body').append(currentBubleContainer);
-				}
-				$('.modal-history').modal('show');
-			}
+			success: showHistory
 		});
 	});
+
+	function showHistory(data){
+        var bubble = $('<div>').addClass('bubble');
+        var bubbleContainerTitle = $('<div>').addClass('title');
+        var bubbleContainer = $('<div>').addClass('bubble-container');
+        for(var i=0;i<data.length;i++){
+            var currentBubbleContainer = bubbleContainer.clone();
+            var dateStr = moment(data[i].date).format('YYYY-MM-DD HH:mm');
+            currentBubbleContainer.append(bubbleContainerTitle.clone().text(data[i].author.name + " " + dateStr));
+            var diff = data[i].diff;
+            diff = diff.camera ? diff : splitEquipment(diff);
+            var prevDiff = data[i-1] ? data[i-1].diff : {equipment:[]};
+            prevDiff = prevDiff.camera ? prevDiff : splitEquipment(prevDiff);
+            currentBubbleContainer
+                .append(generateBubble(prevDiff.title, diff.title))
+                .append(generateBubble(prevDiff.description, diff.description))
+                .append(generateBubble(printDate(prevDiff.start), printDate(diff.start)))
+                .append(generateBubble(printDate(prevDiff.end), printDate(diff.end)))
+                .append(generateBubble(printLocation(prevDiff.location), printLocation(diff.location)));
+
+            appendBubblesForArrays(prevDiff.users, diff.users, currentBubbleContainer);
+            appendBubblesForArrays(prevDiff.camera, diff.camera, currentBubbleContainer);
+            appendBubblesForArrays(prevDiff.lens, diff.lens, currentBubbleContainer);
+            appendBubblesForArrays(prevDiff.light, diff.light, currentBubbleContainer);
+            appendBubblesForArrays(prevDiff.sound, diff.sound, currentBubbleContainer);
+            appendBubblesForArrays(prevDiff.accessory, diff.accessory, currentBubbleContainer);
+            $('.modal-history').find('.modal-body').append(currentBubbleContainer);
+        }
+        $('.modal-history').modal('show');
+
+        function printDate(date) {
+            return date ? date.replace('T',' ') : '';
+        }
+
+        function printLocation(location) {
+            return location ? location.name : '';
+        }
+
+        function printArray(array) {
+            return array && array.length > 0 ? mapNames(array).toString().replace(',', ', ') : '';
+        }
+
+        function filterExclusiveItems(oldArray, newArray) {
+            if(!oldArray) {
+                return [];
+            }
+            if(!newArray) {
+                return oldArray;
+            }
+            var result = oldArray.slice();
+            for(var i=oldArray.length-1;i>=0;i--){
+                for(var j=newArray.length;j>=0;j--){
+                    if(oldArray[i] && newArray[j] && oldArray[i].id === newArray[j].id) {
+                        result.splice(i, 1);
+                    }
+                }
+            }
+            return result;
+        }
+
+        function generateBubble(oldValue, newValue) {
+            if(!oldValue && newValue) {
+                return generateAddedBubble(newValue);
+            }
+            if(oldValue && !newValue) {
+                return generateRemovedBubble(oldValue);
+            }
+            if(oldValue && newValue && oldValue !== newValue) {
+                return bubble.clone()
+                   .addClass('modified')
+                   .text(newValue);
+            }
+            return '';
+        }
+
+        function appendBubblesForArrays(oldValues, newValues, bubbleContainer) {
+            var removedItems = filterExclusiveItems(oldValues, newValues);
+            removedItems.forEach(function(item){
+                bubbleContainer.append(generateRemovedBubble(item.name));
+            })
+            var addedItems = filterExclusiveItems(newValues, oldValues);
+            addedItems.forEach(function(item){
+                bubbleContainer.append(generateAddedBubble(item.name));
+            })
+        }
+
+        function generateAddedBubble(value) {
+            return bubble.clone()
+                .addClass('added')
+                .text(value);
+        }
+
+        function generateRemovedBubble(value) {
+            return bubble.clone()
+                .addClass('removed')
+                .text(value);
+        }
+	}
 
 	$('.modal-history').on('hidden.bs.modal', function () {
 		$(this).find('.modal-body').empty();
@@ -1244,13 +1319,13 @@ $(document).ready(function() {
     function splitEquipment(event) {
         var equipment = event.equipment;
         delete event.equipment;
-        event.camera = filterByType('camera');
-        event.lens = filterByType('lens');
-        event.light = filterByType('light');
-        event.sound = filterByType('sound');
-        event.accessory = filterByType('accessory');
+        event.camera = filterEquipmentByType('camera');
+        event.lens = filterEquipmentByType('lens');
+        event.light = filterEquipmentByType('light');
+        event.sound = filterEquipmentByType('sound');
+        event.accessory = filterEquipmentByType('accessory');
 
-        function filterByType(type){
+        function filterEquipmentByType(type){
             return equipment.filter(function(item){return item.type === type;})
         }
 

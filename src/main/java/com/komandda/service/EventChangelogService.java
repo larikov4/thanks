@@ -21,16 +21,7 @@ public class EventChangelogService {
     private EventService eventService;
 
     public EventChangeItem insert(EventChangeItem eventChangeItem) {
-        String diffItemId = eventChangeItem.getDiffItemId();
-        Event prevEvent = eventService.findOne(diffItemId);
-        if (!findByDiffItemId(diffItemId).isEmpty()) {
-            Event diffEvent = generateDiff(eventChangeItem.getDiff(), prevEvent);
-            eventChangeItem.setDiff(diffEvent);
-        }
-        if (eventChangeItem.getDiff() != null){
-            return repository.insert(eventChangeItem);
-        }
-        return null;
+        return repository.insert(eventChangeItem);
     }
 
     private Event generateDiff(Event currentEvent, Event prevEvent) {

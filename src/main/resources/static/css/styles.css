@@ -796,9 +796,24 @@ label.error {
     background-color:#ec7063;
 }
 
+.modal.modal-history .modal-body {
+    min-height:auto;
+    padding: 15px;
+}
+
+.modal.modal-history .modal-footer {
+    padding: 15px;
+}
+
 .bubble-container {
-  margin: 15px;
-  font-size: 18px;
+    font-size: 18px;
+    background-color:#BDC3C7;
+    margin-bottom: 15px;
+}
+
+.bubble-container .title {
+    margin: 15px;
+    margin-top: 0;
 }
 
 .bubble {
@@ -808,7 +823,20 @@ label.error {
     color:#333;
     border-radius: 10px;
     padding: 5px 10px;
-    margin: 5px;
+    margin-left: 15px;
+    margin-bottom: 15px;
+}
+
+.bubble.added {
+    background-color: #16A085;
+}
+
+.bubble.modified {
+    background-color: #F1C40F;
+}
+
+.bubble.removed {
+    background-color: #C0392B;
 }
 
 /*.fc-toolbar .btn-inverse {*/
