@@ -24,6 +24,7 @@ $(document).ready(function() {
 	var movingEvent = null;
 	var EVENT_REST_URL = "/rest/events";
 	var SERIES_REST_URL = "/rest/series";
+	var BIRTHDAY_EVENT_COLOR = '#BDC3C7';
 	var wasModalSubmitted = false;
 
     function mapEquipmentType(equipment) {
@@ -100,6 +101,7 @@ $(document).ready(function() {
                     start:moment(birthday).add(8, 'hours').year(getNearestYear(birthday)),
                     end:moment(birthday).add(18, 'hours').year(getNearestYear(birthday)),
                     id: 'birthday' + i,
+                    isBirthday: true,
                     author: {
                         name:currentUser.name
                     }
@@ -645,9 +647,14 @@ $(document).ready(function() {
 		    }
 		},
 		eventRender: function (event, $target, view) {
-			var authorColor = repo.colors.users[event.author.name];
-			$target.css('background-color', authorColor);
-			$target.css('border-color', authorColor);
+		    if(event.isBirthday) {
+		        $target.css('background-color', BIRTHDAY_EVENT_COLOR);
+                $target.css('border-color', BIRTHDAY_EVENT_COLOR);
+		    } else {
+                var authorColor = repo.colors.users[event.author.name];
+                $target.css('background-color', authorColor);
+                $target.css('border-color', authorColor);
+		    }
 
 			if(event.isStub && !$target.find('.fc-content').hasClass('empty-field')) {
                 $target.find('.fc-content').addClass('empty-field');
