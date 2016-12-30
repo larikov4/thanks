@@ -1045,7 +1045,7 @@ $(document).ready(function() {
 
 	function resetForm(){
 		disableForm();
-		$("#recording").prop("checked", false);
+		$("#recording").prop("checked", false).trigger('change.radiocheck');
 		$("#series").prop("checked", false);
 		$("#series").prop( "disabled", false);
 		currentEvent = null;
