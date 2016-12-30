@@ -409,7 +409,9 @@ $(document).ready(function() {
 	    var urlFreeSuffix = isSeries ? "/series/free" : "/free";
 	    var idName = isSeries ? "seriesId" : "id";
 		var ajaxCounter = 0;
-	    toggleRecordingCheckbox(currentEvent && currentEvent.location);
+		if(currentEvent) {
+	        toggleRecordingCheckbox(currentEvent.location);
+		}
 	    var data = {
             start:$('#start-date').val() + "T" + $('#start-time').val(),
             end:$('#end-date').val() + "T" + $('#end-time').val()
@@ -937,7 +939,9 @@ $(document).ready(function() {
             appendBubblesForArrays(prevDiff.light, diff.light, currentBubbleContainer);
             appendBubblesForArrays(prevDiff.sound, diff.sound, currentBubbleContainer);
             appendBubblesForArrays(prevDiff.accessory, diff.accessory, currentBubbleContainer);
-            $('.modal-history').find('.modal-body').append(currentBubbleContainer);
+            if(currentBubbleContainer.children().length > 1) {
+                $('.modal-history').find('.modal-body').append(currentBubbleContainer);
+            }
         }
         $('.modal-history').modal('show');
 
