@@ -53,8 +53,8 @@ public class SeriesEventUpdatingEmailTemplate extends EventUpdatingEmailTemplate
     }
 
     private String generateDayOfWeekDiff(){
-        String prevEventStartWeekDay = DATE_HELPER.asLocalDateTime(prevEvent.getStart()).getDayOfWeek().name();
-        String eventStartWeekDay = DATE_HELPER.asLocalDateTime(getEvent().getStart()).getDayOfWeek().name();
+        String prevEventStartWeekDay = DATE_HELPER.asLocalDateTime(prevEvent.getStart()).getDayOfWeek().name().toLowerCase();
+        String eventStartWeekDay = DATE_HELPER.asLocalDateTime(getEvent().getStart()).getDayOfWeek().name().toLowerCase();
         if (!prevEventStartWeekDay.equals(eventStartWeekDay)) {
             return "Day of a week was changed" + LINE_SEPARATOR +
                     "\tfrom " +
