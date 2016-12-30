@@ -903,3 +903,15 @@ label.error {
 select.ui-datepicker-year {
     color:black;
 }
+
+#cancel-event-edit {
+    width:76px;
+}
+
+#series-event-edit {
+    width:214px;
+}
+
+#single-event-edit {
+    width:128px;
+}
