@@ -333,7 +333,8 @@ $(document).ready(function() {
                 .done(function(result){
                     var urlFreeSuffix = result === "series" ? "/series/free" : "/free";
                     var urlUpdateSuffix = result === "series" ? SERIES_REST_URL : EVENT_REST_URL;
-                    sendRequest(urlFreeSuffix, urlUpdateSuffix, "seriesId");
+                    var idName = result === "series" ? "seriesId" : "id";
+                    sendRequest(urlFreeSuffix, urlUpdateSuffix, idName);
                 })
                 .fail(function(){
                     param.busy();

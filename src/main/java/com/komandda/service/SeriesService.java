@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class SeriesService {
-    public static final int WEEKS_AMOUNT_IN_SERIES = 4;
+    public static final int WEEKS_AMOUNT_IN_SERIES = 8;
 
     @Autowired
     private SeriesRepository seriesRepository;
@@ -93,7 +93,6 @@ public class SeriesService {
     }
 
     @Scheduled(cron = "0 0 23 * * ?")
-//    @Scheduled(cron = "0 22 16 * * ?")
     public void addSeriesEvents() {
         Date threeWeeksLater = dateHelper.asDate(LocalDateTime.now().plusWeeks(WEEKS_AMOUNT_IN_SERIES - 1));
         List<Event> events = eventService.findAll();
