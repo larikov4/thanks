@@ -878,11 +878,15 @@ $(document).ready(function() {
 	}
 
 	$('body').on('click', 'button.delete', function(){
-        seriesOrSingleEventEdit()
-            .done(function(result){
-                var urlUpdateSuffix = result === "series" ? SERIES_REST_URL : EVENT_REST_URL;
-                deleteCurrentEvent(urlUpdateSuffix);
-            })
+	    if(currentEvent.seriesId) {
+            seriesOrSingleEventEdit()
+                .done(function(result){
+                    var urlUpdateSuffix = result === "series" ? SERIES_REST_URL : EVENT_REST_URL;
+                    deleteCurrentEvent(urlUpdateSuffix);
+                })
+	    } else {
+	        deleteCurrentEvent(EVENT_REST_URL);
+	    }
 	});
 
 	function deleteCurrentEvent(url) {
