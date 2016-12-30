@@ -5,15 +5,9 @@ import com.komandda.entity.EventChangeItem;
 import com.komandda.entity.Event;
 import com.komandda.entity.User;
 import com.komandda.repository.EventRepository;
-import com.komandda.service.email.sender.EmailSender;
-import com.komandda.service.email.template.EmailTemplate;
-import com.komandda.service.email.template.EventCreationEmailTemplate;
-import com.komandda.service.email.template.EventDeletingEmailTemplate;
-import com.komandda.service.email.template.EventUpdatingEmailTemplate;
+import com.komandda.service.email.facade.EventEmailSenderFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -38,7 +32,7 @@ public class EventService {
     private EventChangelogService changelog;
 
     @Autowired
-    private EmailSender emailSender;
+    private EventEmailSenderFacade emailSender;
 
 
     public List<Event> findAll() {
@@ -52,7 +46,7 @@ public class EventService {
     public Event insert(Event event, User author) {
         setEmptyEquipmentListIfAbsent(event);
         if(event.getSeriesId()==null){
-            sendCreationEventEmail(event, author);
+            emailSender.sendCreationEventEmail(event, author);
         }
 
         event.setCreated(new Date());
@@ -68,7 +62,7 @@ public class EventService {
     public Event save(Event event, User author) {
         Event prevEvent = repository.findOne(event.getId());
         if(event.getSeriesId()==null) {
-            sendUpdatingEventEmail(event, author, prevEvent);
+            emailSender.sendUpdatingEventEmail(event, author, prevEvent);
         }
         setEmptyEquipmentListIfAbsent(event);
         Event savedEvent = repository.save(event);
@@ -83,7 +77,7 @@ public class EventService {
     public Event delete(Event event, User author) {
         repository.delete(event);
         if(event.getSeriesId()==null) {
-            sendDeletingEventEmail(event, author);
+            emailSender.sendDeletingEventEmail(event, author);
         }
         return hidePassword(event);
     }
@@ -125,39 +119,5 @@ public class EventService {
         userService.hidePassword(event.getUsers());
         userService.hidePassword(event.getAuthor());
         return event;
-    }
-
-    private void sendCreationEventEmail(Event event, User author) {
-        EmailTemplate template = new EventCreationEmailTemplate(event, author);
-        emailSender.send(provideEmailReceivers(event, author), template);
-    }
-
-    private void sendUpdatingEventEmail(Event event, User author, Event prevEvent) {
-        EmailTemplate template = new EventUpdatingEmailTemplate(event, author, prevEvent);
-        emailSender.send(provideEmailReceivers(event, author, prevEvent), template);
-    }
-
-    private void sendDeletingEventEmail(Event event, User author) {
-        EmailTemplate template = new EventDeletingEmailTemplate(event, event.getAuthor());
-        emailSender.send(provideEmailReceivers(event, author), template);
-    }
-
-    private Collection<User> provideEmailReceivers(Event event, User author) {
-        Collection<User> users = new ArrayList<>(event.getUsers());
-        if(!users.contains(event.getAuthor())) {
-            users.add(event.getAuthor());
-        }
-        users.remove(author);
-        return users;
-    }
-
-    private Collection<User> provideEmailReceivers(Event event, User author, Event prevEvent) {
-        Collection<User> users = new HashSet<>(event.getUsers());
-        users.addAll(prevEvent.getUsers());
-        if(!users.contains(event.getAuthor())) {
-            users.add(event.getAuthor());
-        }
-        users.remove(author);
-        return users;
     }
 }

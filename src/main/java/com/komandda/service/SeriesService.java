@@ -6,6 +6,8 @@ import com.komandda.entity.Series;
 import com.komandda.entity.User;
 import com.komandda.entity.comparator.EventComparatorByDate;
 import com.komandda.repository.SeriesRepository;
+import com.komandda.service.email.facade.EventEmailSenderFacade;
+import com.komandda.service.email.facade.SeriesEventEmailSenderFacade;
 import com.komandda.service.helper.DateHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -33,6 +35,9 @@ public class SeriesService {
     @Autowired
     private DateHelper dateHelper;
 
+    @Autowired
+    private SeriesEventEmailSenderFacade emailSender;
+
     public List<Series> findAll() {
         return seriesRepository.findAll();
     }
@@ -41,10 +46,13 @@ public class SeriesService {
         Series series = new Series(event, dateHelper.plusWeeks(event.getStart(), WEEKS_AMOUNT_IN_SERIES));
         Series seriesWithId = seriesRepository.insert(series);
         event.setSeriesId(seriesWithId.getId());
+        emailSender.sendCreationEventEmail(event, author);
         return insertSeriesEvents(event, author);
     }
 
-    public List<Event> save(Event updatingEvent, User user) {
+    public List<Event> save(Event updatingEvent, User author) {
+        Event prevEvent = eventService.findOne(updatingEvent.getId());
+        emailSender.sendUpdatingEventEmail(updatingEvent, author, prevEvent);
         long startDateDiff = dateHelper.getDurationFromWeekBeginning(updatingEvent.getStart());
         long endDateDiff = dateHelper.getDurationFromWeekBeginning(updatingEvent.getEnd());
         return eventService.findAll().stream()
@@ -56,18 +64,19 @@ public class SeriesService {
                     newEvent.setId(currentEvent.getId());
                     newEvent.setStart(dateHelper.addDifference(currentEvent.getStart(), startDateDiff));
                     newEvent.setEnd(dateHelper.addDifference(currentEvent.getEnd(), endDateDiff));
-                    return eventService.save(newEvent, user);
+                    return eventService.save(newEvent, author);
                 })
                 .collect(Collectors.toList());
     }
 
-    public List<Event> delete(Event event, User user) {
+    public List<Event> delete(Event event, User author) {
+        emailSender.sendDeletingEventEmail(event, author);
         String seriesId = event.getSeriesId();
         seriesRepository.delete(seriesId);
         return eventService.findAll().stream()
                 .filter(e -> seriesId.equals(e.getSeriesId()))
                 .filter(e -> event.getStart().before(e.getStart()) || event.getStart().equals(e.getStart()))
-                .peek(e -> eventService.delete(e, user))
+                .peek(e -> eventService.delete(e, author))
                 .collect(Collectors.toList());
     }
 
@@ -83,8 +92,8 @@ public class SeriesService {
         return seriesEvents;
     }
 
-    //    @Scheduled(cron = "0 0 23 * * ?")
-    @Scheduled(cron = "0 22 16 * * ?")
+    @Scheduled(cron = "0 0 23 * * ?")
+//    @Scheduled(cron = "0 22 16 * * ?")
     public void addSeriesEvents() {
         Date threeWeeksLater = dateHelper.asDate(LocalDateTime.now().plusWeeks(WEEKS_AMOUNT_IN_SERIES - 1));
         List<Event> events = eventService.findAll();

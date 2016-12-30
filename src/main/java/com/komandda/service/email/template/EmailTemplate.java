@@ -2,6 +2,7 @@ package com.komandda.service.email.template;
 
 import com.komandda.entity.Event;
 import com.komandda.entity.User;
+import com.komandda.service.helper.DateHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -12,7 +13,9 @@ import java.util.Date;
 public abstract class EmailTemplate {
     protected static final String SUBJECT_PREFIX = "[time] ";
     protected static final String LINE_SEPARATOR = "\n";
-    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    private static final SimpleDateFormat DATE_TIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    private static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat("HH:mm");
+    protected static final DateHelper DATE_HELPER = new DateHelper();
 
     private Event event;
     private User author;
@@ -35,6 +38,10 @@ public abstract class EmailTemplate {
     }
 
     protected String format(Date date) {
-        return DATE_FORMATTER.format(date);
+        return DATE_TIME_FORMATTER.format(date);
+    }
+
+    protected String formatTime(Date date) {
+        return TIME_FORMATTER.format(date);
     }
 }

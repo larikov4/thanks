@@ -1,17 +1,18 @@
-package com.komandda.service.email.template;
+package com.komandda.service.email.template.event;
 
 import com.komandda.entity.Equipment;
 import com.komandda.entity.Event;
 import com.komandda.entity.Location;
 import com.komandda.entity.User;
+import com.komandda.service.email.template.EmailTemplate;
 
 import static org.springframework.util.StringUtils.isEmpty;
 
 
 public class EventUpdatingEmailTemplate extends EmailTemplate {
 
-    public static final String EMPTY_VALUE = "nothing";
-    private Event prevEvent;
+    private static final String EMPTY_VALUE = "nothing";
+    protected Event prevEvent;
 
     public EventUpdatingEmailTemplate(Event event, User author, Event prevEvent) {
         super(event, author);
@@ -39,9 +40,9 @@ public class EventUpdatingEmailTemplate extends EmailTemplate {
                 + generateEquipmentDiff();
     }
     
-    private String generateTitleDiff(){
+    protected String generateTitleDiff(){
         if (!prevEvent.getTitle().equals(getEvent().getTitle())) {
-            return "Title changed" + LINE_SEPARATOR +
+            return "Title was changed" + LINE_SEPARATOR +
                     "\tfrom " +
                     prevEvent.getTitle() + LINE_SEPARATOR +
                     "\tto " +
@@ -50,11 +51,11 @@ public class EventUpdatingEmailTemplate extends EmailTemplate {
         return "";
     }
 
-    private String generateDescriptionDiff(){
+    protected String generateDescriptionDiff(){
         String prevEventDescription = isEmpty(prevEvent.getDescription()) ? EMPTY_VALUE : prevEvent.getDescription();
         String currentEventDescription = isEmpty(getEvent().getDescription()) ? EMPTY_VALUE : getEvent().getDescription();
         if (!prevEventDescription.equals(currentEventDescription)) {
-            return "Description changed" + LINE_SEPARATOR +
+            return "Description was changed" + LINE_SEPARATOR +
                     "\tfrom " +
                     prevEventDescription + LINE_SEPARATOR +
                     "\tto " +
@@ -63,9 +64,9 @@ public class EventUpdatingEmailTemplate extends EmailTemplate {
         return "";
     }
 
-    private String generateStartDateDiff(){
+    protected String generateStartDateDiff(){
         if (!prevEvent.getStart().equals(getEvent().getStart())) {
-            return "Event start changed" + LINE_SEPARATOR +
+            return "Event start was changed" + LINE_SEPARATOR +
                     "\tfrom " +
                     format(prevEvent.getStart()) + LINE_SEPARATOR +
                     "\tto " +
@@ -74,9 +75,9 @@ public class EventUpdatingEmailTemplate extends EmailTemplate {
         return "";
     }
 
-    private String generateEndDateDiff(){
+    protected String generateEndDateDiff(){
         if (!prevEvent.getEnd().equals(getEvent().getEnd())) {
-            return "Event end changed" + LINE_SEPARATOR +
+            return "Event end was changed" + LINE_SEPARATOR +
                     "\tfrom " +
                     format(prevEvent.getEnd()) + LINE_SEPARATOR +
                     "\tto " +
@@ -85,14 +86,14 @@ public class EventUpdatingEmailTemplate extends EmailTemplate {
         return "";
     }
 
-    private String generateLocationDiff(){
+    protected String generateLocationDiff(){
         Location prevLocation = prevEvent.getLocation();
         Location currentLocation = getEvent().getLocation();
         if ((prevLocation != null && !prevLocation.equals(currentLocation))
                 || (currentLocation != null && !currentLocation.equals(prevLocation))) {
             String prevLocationName = prevLocation == null ? EMPTY_VALUE : prevLocation.getName();
             String currentLocationName = currentLocation == null ? EMPTY_VALUE : currentLocation.getName();
-            return "Event location changed" + LINE_SEPARATOR +
+            return "Event location was changed" + LINE_SEPARATOR +
                     "\tfrom " +
                     prevLocationName + LINE_SEPARATOR +
                     "\tto " +
@@ -101,7 +102,7 @@ public class EventUpdatingEmailTemplate extends EmailTemplate {
         return "";
     }
 
-    private String generateUsersDiff(){
+    protected String generateUsersDiff(){
         StringBuilder diff = new StringBuilder();
         if (!prevEvent.getUsers().equals(getEvent().getUsers())) {
             for(User user : prevEvent.getUsers()) {
@@ -122,7 +123,7 @@ public class EventUpdatingEmailTemplate extends EmailTemplate {
         return diff.toString();
     }
 
-    private String generateEquipmentDiff(){
+    protected String generateEquipmentDiff(){
         StringBuilder diff = new StringBuilder();
         if (!prevEvent.getEquipment().equals(getEvent().getEquipment())) {
             for (Equipment equipment : prevEvent.getEquipment()) {

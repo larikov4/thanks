@@ -1,8 +1,9 @@
-package com.komandda.service.email.template;
+package com.komandda.service.email.template.event;
 
 import com.komandda.entity.Equipment;
 import com.komandda.entity.Event;
 import com.komandda.entity.User;
+import com.komandda.service.email.template.EmailTemplate;
 
 
 public class EventDeletingEmailTemplate extends EmailTemplate {
