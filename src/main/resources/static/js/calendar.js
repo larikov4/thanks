@@ -555,14 +555,28 @@ $(document).ready(function() {
 	}
 
 	$('#calendar').fullCalendar({
+	    views: {
+            agendaWeekdays: {
+                type: 'agendaWeek',
+                hiddenDays: [0, 6]
+            }
+        },
+        customButtons: {
+            weekdays: {
+                text: 'weekdays',
+                click: function() {
+                    $('#calendar').fullCalendar( 'changeView', 'agendaWeekdays');
+                }
+            }
+        },
 		header: {
 			left: 'prev,next today',
 			center: 'title',
-			right: 'month,agendaWeek,agendaDay'
+			right: 'month,agendaWeek,weekdays,agendaDay'
 		},
 		events:mapEvents(EVENTS),
 		editable:IS_EDITABLE,
-		defaultView:'agendaWeek',
+		defaultView:'agendaWeekdays',
 	 	timeFormat: 'H:mm',
 		displayEventTime: false,
 		firstDay:1,
@@ -571,6 +585,7 @@ $(document).ready(function() {
         firstHour:6,
         columnFormat: 'dddd D.M',
         height: 900,
+        nowIndicator: true,
 	 	eventClick: IS_EDITABLE? onEventClick : function(){},
 	 	eventDrop: function(event, delta, revert){
 			hasAnyBusyResource({
@@ -591,21 +606,68 @@ $(document).ready(function() {
 	 			busy: revert
 	 		});
 	 	},
-	 	viewRender: function(){
-	 		$('.fc-prev-button').find('span').removeClass().addClass('fa fa-chevron-left');
-	 		$('.fc-next-button').find('span').removeClass().addClass('fa fa-chevron-right');
+	 	viewRender: function(view, element){
+	 	    (function modifyButtons(){
+                $('.fc-prev-button').find('span').removeClass().addClass('fa fa-chevron-left');
+                $('.fc-next-button').find('span').removeClass().addClass('fa fa-chevron-right');
 
-	 		$('.fc-button-group').each(function(){
-	 			$(this).removeClass().addClass('btn-group');
-	 		});
+                $('.fc-button-group').each(function(){
+                    $(this).removeClass().addClass('btn-group');
+                });
 
-	 		$('.fc-toolbar').find('button').each(function(){
-	 			var buttonClass = 'btn btn-inverse';
-	 			if($(this).hasClass('fc-today-button')){
-	 				buttonClass += ' fc-today-button';
-	 			}
-	 			$(this).removeClass().addClass(buttonClass);
-	 		});
+                $('.fc-toolbar').find('button').each(function(){
+                    var buttonClass = 'btn btn-inverse';
+                    if($(this).hasClass('fc-today-button')){
+                        buttonClass += ' fc-today-button';
+                    }
+                    $(this).removeClass().addClass(buttonClass);
+                });
+	 	    })();
+
+	 	    if(view.type.contains('agenda')) {
+                setColsWidth();
+	 	    }
+
+            function setColsWidth() {
+                var tableHeaders = $('.fc-head-container th');
+                var tableCols = $('.fc-bg td');
+                var eventCols = $('.fc-content-skeleton td');
+
+                var narrowDaysAmount = 0;
+                tableCols.each(function(i, v){
+                    var $v = $(v);
+                    if($v.hasClass('fc-past') || $v.hasClass('fc-sat') || $v.hasClass('fc-sun')){
+                        narrowDaysAmount++;
+                    }
+                })
+                var totalWidth = 100;
+                var wideDaysAmount = tableCols.length - narrowDaysAmount - 1;
+                var standardColWidth = totalWidth / (wideDaysAmount + narrowDaysAmount);
+                var narrowColWidth = standardColWidth;
+                if(wideDaysAmount > 1){
+                    narrowColWidth *= 0.7;
+                }
+                else {
+                    narrowColWidth *= 0.85;
+                }
+                var wideColWidth = (totalWidth - narrowDaysAmount * narrowColWidth) / (wideDaysAmount + 1);
+                for(var i=tableCols.length - 1; i >= 1 ; i--) {
+                    var currentCols = [tableHeaders.eq(i), tableCols.eq(i), eventCols.eq(i)];
+                    if(tableCols.eq(i).hasClass('fc-today')){
+                        setColWidth(currentCols, wideColWidth * 2);
+                    } else if(tableCols.eq(i).hasClass('fc-past') || tableCols.eq(i).hasClass('fc-sat') || tableCols.eq(i).hasClass('fc-sun')) {
+                        setColWidth(currentCols, narrowColWidth);
+                    } else if(tableCols.eq(i).hasClass('fc-future')){
+                        setColWidth(currentCols, wideColWidth);
+                    }
+                }
+            }
+
+            function setColWidth($elements, percentOfWidth) {
+                $elements.forEach(function($element){
+                    $element.css('width', percentOfWidth + '%');
+                })
+            }
 	 	},
 		dayClick: !IS_EDITABLE ? function(){} : function(date) {
 			currentEvent = null;
@@ -650,6 +712,9 @@ $(document).ready(function() {
 		    }
 		},
 		eventRender: function (event, $target, view) {
+		    if(event.end.isBefore(new Date())){
+		        $target.addClass('past-event');
+		    }
 		    if(event.isBirthday) {
 		        $target.css('background-color', BIRTHDAY_EVENT_COLOR);
                 $target.css('border-color', BIRTHDAY_EVENT_COLOR);

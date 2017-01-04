@@ -915,3 +915,20 @@ select.ui-datepicker-year {
 #single-event-edit {
     width:128px;
 }
+
+.fc-now-indicator {
+    color:#C0392B;
+    z-index:1;
+}
+
+.past-event {
+    opacity:0.5;
+}
+
+.fc-time {
+    border-right-width: 0!important;
+}
+
+.fc-time + .fc-widget-content {
+    border-left-width: 0!important;
+}
