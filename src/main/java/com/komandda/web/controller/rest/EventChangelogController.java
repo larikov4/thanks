@@ -19,7 +19,6 @@ public class EventChangelogController {
     @Autowired
     private EventChangelogService service;
 
-    @PreAuthorize("hasAuthority('event_edit')")
     @RequestMapping(value = "/{diffItemId}", method = RequestMethod.GET)
     public List<EventChangeItem> findOne(@PathVariable("diffItemId") String diffItemId) {
         return service.findByDiffItemId(diffItemId);

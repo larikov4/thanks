@@ -1,6 +1,12 @@
 var $grid = $("#jsGrid");
 var REST_URL = '/rest/' + ROOT_URL;
 
+var PERMISSIONS = [
+    {name:'admin'},
+    {name:'user'},
+    {name:'observer'}
+];
+
 USERS = USERS.map(function(user){
     user.birthday = user.birthday ? moment(user.birthday).format('YYYY-MM-DD') : user.birthday;
     return user;
@@ -160,10 +166,7 @@ $grid.jsGrid({
         { name: "birthday", type: "date", width: 30 },
         { name: "email", type: "text", width: 30 },
         { name: "color", type: "select", width: 50, items: COLORS, valueField: "hex", textField: "name", validate: "required" },
-        { name: "event edit", type: "checkbox", width: 20},
-        { name: "user edit", type: "checkbox", width: 20},
-        { name: "equipment edit", type: "checkbox", width: 30},
-        { name: "location edit", type: "checkbox", width: 25},
+        { name: "permission", type: "select", width: 50, items: PERMISSIONS, valueField: "name", textField: "name", validate: "required" },
         IS_EDITABLE ? { type: "control", width: 15 } : ''
     ]
 });
@@ -183,38 +186,28 @@ $("#jsGrid").on("editFormRendered", function(e, id){
 function parseUsersPermission(users){
     for(i in users){
         var user = users[i];
-        for(j in user.authorities){
-            var authority = user.authorities[j].name;
-            if(authority.contains("event")){
-                user["event edit"] = true;
-            }
-            if(authority.contains("user")){
-                user["user edit"] = true;
-            }
-            if(authority.contains("equipment")){
-                user["equipment edit"] = true;
-            }
-            if(authority.contains("location")){
-                user["location edit"] = true;
-            }
+        if(user.authorities && user.authorities.length === 4){
+            user['permission'] = "admin";
+        } else if(user.authorities && user.authorities.length === 1){
+            user['permission'] = "user";
+        } else {
+            user['permission'] = "observer";
         }
     }
     return users;
 }
 
 function parseInputPermissions(inputData){
+    var permission = inputData['permission'];
     inputData.authorities = [];
-    if(inputData["event edit"]){
+    if(permission === "admin"){
         inputData.authorities.push({name:"event_edit"})
-    }
-    if(inputData["user edit"]){
         inputData.authorities.push({name:"user_edit"})
-    }
-    if(inputData["equipment edit"]){
         inputData.authorities.push({name:"equipment_edit"})
-    }
-    if(inputData["location edit"]){
         inputData.authorities.push({name:"location_edit"})
+    }
+    if(permission === "user"){
+        inputData.authorities.push({name:"self_event_edit"})
     }
     return inputData;
 }

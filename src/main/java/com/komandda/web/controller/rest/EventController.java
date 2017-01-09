@@ -3,9 +3,12 @@ package com.komandda.web.controller.rest;
 import com.komandda.entity.Event;
 import com.komandda.entity.User;
 import com.komandda.service.EventService;
+import com.komandda.web.controller.rest.permission.PermissionChecker;
+import com.komandda.web.controller.rest.permission.exception.MissingPermissionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +28,9 @@ public class EventController {
     @Autowired
     private SimpMessagingTemplate webSocket;
 
+    @Autowired
+    private PermissionChecker permissionChecker;
+
     @RequestMapping(method = RequestMethod.GET)
     public List<Event> findAll() {
         return service.findAll();
@@ -42,21 +48,23 @@ public class EventController {
         return service.findBy(locationId, userIds, equipmentIds);
     }
 
-    @PreAuthorize("hasAuthority('event_edit')")
+    @PreAuthorize("hasAnyAuthority('event_edit', 'self_event_edit')")
     @RequestMapping(method = RequestMethod.POST)
     public void add(@RequestBody Event event, @AuthenticationPrincipal User user) {
         webSocket.convertAndSend("/event/create", service.insert(event, user));
     }
 
-    @PreAuthorize("hasAuthority('event_edit')")
+    @PreAuthorize("hasAnyAuthority('event_edit', 'self_event_edit')")
     @RequestMapping(method = RequestMethod.PUT)
     public void update(@RequestBody Event event, @AuthenticationPrincipal User user) {
+        permissionChecker.checkSelfEditPermission(event, user);
         webSocket.convertAndSend("/event/update", service.save(event, user));
     }
 
-    @PreAuthorize("hasAuthority('event_edit')")
+    @PreAuthorize("hasAnyAuthority('event_edit', 'self_event_edit')")
     @RequestMapping(method = RequestMethod.DELETE)
     public void delete(@RequestBody Event event, @AuthenticationPrincipal User user) {
+        permissionChecker.checkSelfEditPermission(event, user);
         webSocket.convertAndSend("/event/delete", service.delete(event, user));
     }
 

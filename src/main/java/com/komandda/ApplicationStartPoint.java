@@ -28,18 +28,22 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 
 @SpringBootApplication
 @EnableAsync
 @EnableScheduling
 public class ApplicationStartPoint {
+	private static final Permission EVENT_EDIT_PERMISSION = new Permission("id", "event_edit");
+	private static final Permission SELF_EVENT_EDIT_PERMISSION = new Permission("id", "self_event_edit");
 
 	@Autowired
 	private UserRepository userRepository;
@@ -59,6 +63,24 @@ public class ApplicationStartPoint {
         generateDefaultUserIfAnyAbsent();
         setDeletedToFalse();
 		setNameIfAbsent();
+		convertPermissions();
+	}
+
+	private void convertPermissions() {
+		userRepository.findAll().stream()
+				.map(this::convertSelfEditEventPermission)
+				.forEach(userRepository::save);
+	}
+
+	private User convertSelfEditEventPermission(User user){
+		if(user.getAuthorities().size() < 4 && !user.getAuthorities().contains(SELF_EVENT_EDIT_PERMISSION)) {
+			if(user.getAuthorities().contains(EVENT_EDIT_PERMISSION)) {
+				user.setAuthorities(Collections.singletonList(SELF_EVENT_EDIT_PERMISSION));
+			} else {
+				user.setAuthorities(Collections.emptyList());
+			}
+		}
+		return user;
 	}
 
 	private void setNameIfAbsent() {

@@ -337,7 +337,7 @@ $(document).ready(function() {
                     sendRequest(urlFreeSuffix, urlUpdateSuffix, idName);
                 })
                 .fail(function(){
-                    param.busy();
+                    param.revert();
                 })
 		} else {
 		    sendRequest("/free", EVENT_REST_URL, "id");
@@ -390,9 +390,9 @@ $(document).ready(function() {
                 })
             ).then(function(){
                 if(isBusy){
-                    param.busy();
+                    param.revert();
                 } else {
-                    param.free(event, urlUpdateSuffix);
+                    param.proceed(event, urlUpdateSuffix, param.revert);
                 }
             });
 		}
@@ -540,7 +540,7 @@ $(document).ready(function() {
         $input.select2("val", "").addClass('multiselect-primary').removeClass('multiselect-default');
     }
 
-	function updateEvent(event, url) {
+	function updateEvent(event, url, revert) {
 		delete event.source;
 		event = groupEquipment(event);
 		$.ajax({
@@ -548,9 +548,15 @@ $(document).ready(function() {
 			url: url,
 			contentType: "application/json",
 			data: JSON.stringify(event)
-		}).success(function (data) {
 		}).fail(function (e) {
-			toastr["error"]("Server error #4. Please refresh the page.");
+		    if(e.status === 403) {
+		        toastr.remove();
+			    toastr["warning"]("You don't have permission to edit this event.");
+			    revert();
+			    splitEquipment(event)
+		    } else {
+			    toastr["error"]("Server error #4. Please refresh the page.");
+		    }
 		});
 	}
 
@@ -590,8 +596,8 @@ $(document).ready(function() {
 	 	eventDrop: function(event, delta, revert){
 			hasAnyBusyResource({
 				event:event,
-				free: updateEvent,
-				busy: revert
+				proceed: updateEvent,
+				revert: revert
 			});
 	 	},
 	 	eventResize: function(event, delta, revert){
@@ -602,8 +608,8 @@ $(document).ready(function() {
 			}
 	 		hasAnyBusyResource({
 	 			event:event,
-	 			free: updateEvent,
-	 			busy: revert
+	 			proceed: updateEvent,
+	 			revert: revert
 	 		});
 	 	},
 	 	viewRender: function(view, element){
@@ -938,9 +944,15 @@ $(document).ready(function() {
 				contentType: "application/json",
 				data: JSON.stringify(event)
 			}).success(function (data) {
-				$('.modal-edit').modal('hide')
+				$('.modal-edit').modal('hide');
 			}).fail(function (e) {
-				toastr["error"]("Server error #6. Please refresh the page.");
+                if(e.status === 403) {
+                    toastr.remove();
+                    $('.modal-edit').modal('hide');
+                    toastr["warning"]("You don't have permission to edit this event.");
+                } else {
+				    toastr["error"]("Server error #6. Please refresh the page.");
+                }
 			});
 		}
 	}
@@ -968,7 +980,14 @@ $(document).ready(function() {
 			$('.popover').popover('hide');
 			resetForm();
 		}).fail(function(e){
-			toastr["error"]("Server error #7. Please refresh the page.");
+            if(e.status === 403) {
+                toastr.remove();
+                $('.popover').popover('hide');
+                resetForm();
+                toastr["warning"]("You don't have permission to edit this event.");
+            } else {
+			    toastr["error"]("Server error #7. Please refresh the page.");
+            }
 		});
 	}
 
