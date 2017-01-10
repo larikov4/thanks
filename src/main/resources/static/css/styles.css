@@ -918,7 +918,7 @@ select.ui-datepicker-year {
 
 .fc-now-indicator {
     color:#C0392B;
-    z-index:1;
+    z-index:20;
 }
 
 .past-event {

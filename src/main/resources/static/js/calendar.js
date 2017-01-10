@@ -718,7 +718,7 @@ $(document).ready(function() {
 		    }
 		},
 		eventRender: function (event, $target, view) {
-		    if(event.end.isBefore(new Date())){
+		    if(new Date(event.end).getTime() < getCurrentTime()){
 		        $target.addClass('past-event');
 		    }
 		    if(event.isBirthday) {
@@ -778,6 +778,12 @@ $(document).ready(function() {
 				        .map(function(str){ return str.trim()[0]; })
 				        .filter(function(char){ return char!=='('})
 				        .join('')
+				}
+
+				function getCurrentTime() {
+				    now = moment().format();
+                    now = now.substring(0, now.length-6);
+                    return new Date(now).getTime();
 				}
 			}
 		},
