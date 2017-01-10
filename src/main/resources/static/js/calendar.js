@@ -779,12 +779,6 @@ $(document).ready(function() {
 				        .filter(function(char){ return char!=='('})
 				        .join('')
 				}
-
-				function getCurrentTime() {
-				    now = moment().format();
-                    now = now.substring(0, now.length-6);
-                    return new Date(now).getTime();
-				}
 			}
 		},
 		eventAfterRender: function (event, $target){
@@ -903,6 +897,12 @@ $(document).ready(function() {
 			}
         }
 	});
+
+    function getCurrentTime() {
+        now = moment().format();
+        now = now.substring(0, now.length-6);
+        return new Date(now).getTime();
+    }
 
     $('#calendar').on('mouseup', function(){
         if(movingEvent && isDurationMoreThanOrEqualsOneHourByDates(movingEvent.start.toDate(), movingEvent.end.toDate())){
