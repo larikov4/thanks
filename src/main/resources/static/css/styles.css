@@ -259,24 +259,29 @@ a .fa-lg {
     height:41px;
 }
 
-.modal-dialog {
-    width: 848px;
+.modal-edit .modal-body {
+    padding-right:0;
 }
-.modal .modal-dialog {
-    width:426px;
+
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
 }
 
 .left-part {
     width:411px;
     display: inline-block;
-    position:absolute;
+    float: left;
 }
 
 .right-part {
     padding-left: 15px;/*15 + 411*/
-    margin-left: 411px;/*15 + 411*/
     width:420px;
     display: inline-block;
+    float: left;
 }
 
 .hidden-part {
@@ -326,8 +331,16 @@ label.form-control-label.series {
     margin-left: 10px;
 }
 
-div.row.user {
-    height:52px;
+.modal-edit .modal-dialog {
+    width:428px;
+}
+
+div.row.user .input-container {
+    margin-bottom: 7px;
+}
+
+.form-group.row:last-child {
+    margin-bottom: 4px;
 }
 
 .modal-body .row {
@@ -365,11 +378,22 @@ div.row.user {
 .popover-title {
     text-align:center;
     padding-right:0;
+    position: relative;
+    padding-left: 0;
 }
 
 .popover .close {
     font-size:15px;
     height:1.1em;
+    position: absolute;
+    right: 5px;
+}
+
+.popover .video-editing {
+    text-align: center;
+    background-color: #CCC;
+    padding-bottom: 0;
+    margin-bottom: 10px;
 }
 
 .popover .date {
@@ -469,7 +493,7 @@ span.color {
 }
 
 .modal .modal-footer .btn{
-    margin-left: 11px;
+    margin-left: 10px;
 }
 
 .datepicker.dropdown-menu {
@@ -733,7 +757,7 @@ a.ui-state-default {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 0 3px;
+    padding: 3px 8px;
     font-size:12px;
 }
 
@@ -743,17 +767,6 @@ a.ui-state-default {
     position: absolute;
     width: 100%;
     bottom: 0;
-}
-
-.fc-event-username {
-    padding: 0;
-    margin: 0;
-    text-align: center;
-    /*border-bottom: 1px solid #2C3E50;*/
-    /*border-left: 1px solid #2C3E50;*/
-    /*border-right: 1px solid #2C3E50;*/
-    /*width: calc(100% - 2px);*/
-    /*width: -webkit-calc(100% - 2px);*/
 }
 
 .fc-event {
@@ -809,11 +822,11 @@ label.error {
     font-size: 18px;
     background-color:#BDC3C7;
     margin-bottom: 15px;
-    padding: 15px;
+    padding: 5px 15px 0 15px;
 }
 
 .bubble-container .title {
-    margin-bottom: 15px;
+    margin-bottom: 6px;
 }
 
 .bubble {
@@ -848,24 +861,36 @@ label.error {
 }
 
 .fc-event .fc-bg {
-    border: 1px solid #999;
+    border-bottom: 1px solid #999;
+    border-left: 4px solid #777;
+    border-right: none;
 }
 .fc-content {
-    border: 1px solid #999;
+    border-top: 1px solid #999;
+    border-left: 4px solid #777;
+    border-right:none;
 }
 .fc-content.empty-field {
     border-bottom-style: none;
 }
 .fc-content .fc-title {
     font-size: 13px;
+    padding: 6px 5px;
 }
 .fc-content .fc-description {
     display:block;
     font-size: 11px;
 }
 .fc-event-username {
-    border-top: 1px solid #999;
+    margin: 0;
+    text-align: center;
+    /*border-top: 1px solid #999;*/
     border-left: 1px solid #999;
+    padding: 2px 3px 2px 7px;
+    font-size:11px;
+    text-overflow: clip;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 * {
@@ -931,4 +956,46 @@ select.ui-datepicker-year {
 
 .fc-time + .fc-widget-content {
     border-left-width: 0!important;
+}
+
+.fc-left .project {
+    width:38px;
+    margin-right: 12px;
+    transition-property: none;
+}
+
+.project.selected {
+    border: 3px solid #34495e;
+}
+
+.recording-container {
+    /*padding: 3px 8px;
+    border-bottom: 1px solid #999;*/
+    position:relative;
+    height: 16px;
+}
+
+.recording-shadow {
+    background-color: black;
+    opacity: 0.2;
+    position:absolute;
+    top:0;
+    left:0;
+    bottom:0;
+    right:0;
+}
+
+.recording-container span {
+    position:absolute;
+    top:0;
+    left:0;
+    bottom:0;
+    right:0;
+    font-size:11px;
+    letter-spacing: 1px;
+    padding-left:9px;
+}
+
+.fc-event .fc-event-username {
+    letter-spacing: 1px;
 }

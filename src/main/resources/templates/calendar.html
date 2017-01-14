@@ -46,6 +46,12 @@
 							<span class="nav-text">Locations</span>
 						</a>
 					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="projects">
+							<span class="fa fa-puzzle-piece fa-lg nav-icon"></span>
+							<span class="nav-text">Projects</span>
+						</a>
+					</li>
 				</ul>
 			</nav>
 			<a class="sign-out" href="logout">
@@ -101,11 +107,15 @@
 		</aside>
 
 		<div id="popover-container" class="hide">
+			<div class="video-editing">монтаж</div>
 			<div class="col-xs-12">
 				<div class="date"><strong></strong></div>
 			</div>
 			<div class="col-xs-12 description-container">
 				<div><strong>Description: </strong><span class="description"></span></div>
+			</div>
+			<div class="col-xs-12 project-container">
+				<div><strong>Project:</strong><span class="project"></span></div>
 			</div>
 			<div class="col-xs-12">
 				<div><strong>Author:</strong><span class="author"></span></div>
@@ -148,7 +158,7 @@
 					</div>
 					<div class="modal-body">
 						<div class="popup-container">
-							<form sec:authorize="hasAnyAuthority('event_edit', 'self_event_edit')" autocomplete="off" class="event-form">
+							<form sec:authorize="hasAnyAuthority('event_edit', 'self_event_edit')" autocomplete="off" class="event-form clearfix">
 								<div class="left-part">
 									<div class="form-group row">
 										<label class="form-control-label" for="name">Name:</label>
@@ -178,6 +188,12 @@
 										</div>
 										<div class="time-container">
 											<select id="end-time" name="end-time" class="time form-control select select-primary select-block"></select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="form-control-label" for="project">Project:</label>
+										<div  class="input-container">
+											<select id="project" name="project" class="form-control select select-primary select-block"></select>
 										</div>
 									</div>
 									<div class="form-group row user">
@@ -283,6 +299,7 @@
 			var USERS = /*[[${users}]]*/ null;
 			var EQUIPMENT = /*[[${equipment}]]*/ null;
 			var LOCATIONS = /*[[${locations}]]*/ null;
+			var PROJECTS = /*[[${projects}]]*/ null;
 			var EVENTS = /*[[${events}]]*/ null;
 			var IS_EDITABLE = /*[[ ${#authorization.expression("hasAnyAuthority('event_edit', 'self_event_edit')")} ]]*/ null;
 			var CURRENT_USERNAME = /*[[ ${#authentication.name} ]]*/ null;

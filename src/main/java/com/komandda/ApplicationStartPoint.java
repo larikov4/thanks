@@ -33,10 +33,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
+import java.util.*;
 
 @SpringBootApplication
 @EnableAsync
@@ -69,6 +66,7 @@ public class ApplicationStartPoint {
 	private void convertPermissions() {
 		userRepository.findAll().stream()
 				.map(this::convertSelfEditEventPermission)
+				.map(this::addProjectPermission)
 				.forEach(userRepository::save);
 	}
 
@@ -79,6 +77,15 @@ public class ApplicationStartPoint {
 			} else {
 				user.setAuthorities(Collections.emptyList());
 			}
+		}
+		return user;
+	}
+
+	private User addProjectPermission(User user){
+		if(user.getAuthorities().size() == 4) {
+			List<Permission> authorities = user.getAuthorities();
+			authorities.add(new Permission(null, "project_edit"));
+			user.setAuthorities(authorities);
 		}
 		return user;
 	}
@@ -135,6 +142,7 @@ public class ApplicationStartPoint {
 				new Permission("1", "event_edit"),
 				new Permission("3", "location_edit"),
 				new Permission("4", "equipment_edit"),
+				new Permission("5", "project_edit"),
 				new Permission("2", "user_edit")));
 		return admin;
 	}

@@ -27,6 +27,7 @@ public class EventCreationEmailTemplate extends EmailTemplate {
         appendIntroduction(emailBodyBuilder);
         appendTitle(emailBodyBuilder);
         appendDescription(emailBodyBuilder);
+        appendProject(emailBodyBuilder);
         appendDuration(emailBodyBuilder);
         appendAuthor(emailBodyBuilder);
         appendLocation(emailBodyBuilder);
@@ -42,6 +43,12 @@ public class EventCreationEmailTemplate extends EmailTemplate {
 
     private StringBuilder appendTitle(StringBuilder emailBodyBuilder) {
         return emailBodyBuilder.append("Title: ").append(getEvent().getTitle()).append(LINE_SEPARATOR);
+    }
+
+    private void appendProject(StringBuilder emailBodyBuilder) {
+        if(getEvent().getProject() != null ) {
+            emailBodyBuilder.append("Project: ").append(getEvent().getProject().getName()).append(LINE_SEPARATOR);
+        }
     }
 
     private void appendDescription(StringBuilder emailBodyBuilder) {

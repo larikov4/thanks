@@ -42,6 +42,9 @@ public class Event {
     @DBRef
     private Location location;
 
+    @DBRef
+    private Project project;
+
     private Date created;
 
     public Event() {
@@ -58,6 +61,7 @@ public class Event {
         this.equipment = event.equipment;
         this.users = event.users;
         this.location = event.location;
+        this.project = event.project;
         this.created = event.created;
     }
 
@@ -145,6 +149,14 @@ public class Event {
 
     public void setLocation(Location location) {
         this.location = location;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public Date getCreated() {

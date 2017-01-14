@@ -1,9 +1,6 @@
 package com.komandda.service.email.template.event;
 
-import com.komandda.entity.Equipment;
-import com.komandda.entity.Event;
-import com.komandda.entity.Location;
-import com.komandda.entity.User;
+import com.komandda.entity.*;
 import com.komandda.service.email.template.EmailTemplate;
 
 import static org.springframework.util.StringUtils.isEmpty;
@@ -33,13 +30,14 @@ public class EventUpdatingEmailTemplate extends EmailTemplate {
     private String generateDiffBetweenPreviousAndCurrentEvent() {
         return generateTitleDiff()
                 + generateDescriptionDiff()
+                + generateProjectDiff()
                 + generateStartDateDiff()
                 + generateEndDateDiff()
                 + generateLocationDiff()
                 + generateUsersDiff()
                 + generateEquipmentDiff();
     }
-    
+
     protected String generateTitleDiff(){
         if (!prevEvent.getTitle().equals(getEvent().getTitle())) {
             return "Title was changed" + LINE_SEPARATOR +
@@ -52,8 +50,8 @@ public class EventUpdatingEmailTemplate extends EmailTemplate {
     }
 
     protected String generateDescriptionDiff(){
-        String prevEventDescription = isEmpty(prevEvent.getDescription()) ? EMPTY_VALUE : prevEvent.getDescription();
-        String currentEventDescription = isEmpty(getEvent().getDescription()) ? EMPTY_VALUE : getEvent().getDescription();
+        String prevEventDescription = valueOrEmptyStab(prevEvent.getDescription());
+        String currentEventDescription = valueOrEmptyStab(getEvent().getDescription());
         if (!prevEventDescription.equals(currentEventDescription)) {
             return "Description was changed" + LINE_SEPARATOR +
                     "\tfrom " +
@@ -62,6 +60,30 @@ public class EventUpdatingEmailTemplate extends EmailTemplate {
                     currentEventDescription + LINE_SEPARATOR;
         }
         return "";
+    }
+
+    private String valueOrEmptyStab(String value) {
+        return isEmpty(value) ? EMPTY_VALUE : value;
+    }
+
+    protected String generateProjectDiff(){
+        String prevEventProject = projectNameOrEmptyStab(prevEvent.getProject());
+        String currentEventProject = projectNameOrEmptyStab(getEvent().getProject());
+        if (!prevEventProject.equals(currentEventProject)) {
+            return "Project was changed" + LINE_SEPARATOR +
+                    "\tfrom " +
+                    prevEventProject + LINE_SEPARATOR +
+                    "\tto " +
+                    currentEventProject + LINE_SEPARATOR;
+        }
+        return "";
+    }
+
+    private String projectNameOrEmptyStab(Project project) {
+        if(project != null && !isEmpty(project.getName())){
+            return project.getName();
+        }
+        return EMPTY_VALUE;
     }
 
     protected String generateStartDateDiff(){

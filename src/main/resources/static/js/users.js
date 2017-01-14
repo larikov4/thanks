@@ -186,7 +186,7 @@ $("#jsGrid").on("editFormRendered", function(e, id){
 function parseUsersPermission(users){
     for(i in users){
         var user = users[i];
-        if(user.authorities && user.authorities.length === 4){
+        if(user.authorities && user.authorities.length === 5){
             user['permission'] = "admin";
         } else if(user.authorities && user.authorities.length === 1){
             user['permission'] = "user";
@@ -205,6 +205,7 @@ function parseInputPermissions(inputData){
         inputData.authorities.push({name:"user_edit"})
         inputData.authorities.push({name:"equipment_edit"})
         inputData.authorities.push({name:"location_edit"})
+        inputData.authorities.push({name:"project_edit"})
     }
     if(permission === "user"){
         inputData.authorities.push({name:"self_event_edit"})

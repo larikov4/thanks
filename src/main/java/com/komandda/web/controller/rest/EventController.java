@@ -3,6 +3,7 @@ package com.komandda.web.controller.rest;
 import com.komandda.entity.Event;
 import com.komandda.entity.User;
 import com.komandda.service.EventService;
+import com.komandda.service.filter.EventFilterDto;
 import com.komandda.web.controller.rest.permission.PermissionChecker;
 import com.komandda.web.controller.rest.permission.exception.MissingPermissionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +44,11 @@ public class EventController {
 
     @RequestMapping(value = "/filter", method = RequestMethod.GET)
     public List<Event> findBy(@RequestParam(required = false, name = "location")String locationId,
+                              @RequestParam(required = false, name = "projects[]") List<String> projectIds,
                               @RequestParam(required = false, name = "users[]") List<String> userIds,
                               @RequestParam(required = false, name = "equipment[]") List<String> equipmentIds) {
-        return service.findBy(locationId, userIds, equipmentIds);
+        EventFilterDto dto = new EventFilterDto(locationId, projectIds, userIds, equipmentIds);
+        return service.findBy(dto);
     }
 
     @PreAuthorize("hasAnyAuthority('event_edit', 'self_event_edit')")

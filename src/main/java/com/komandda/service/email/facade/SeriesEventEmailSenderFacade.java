@@ -30,7 +30,7 @@ public class SeriesEventEmailSenderFacade extends EmailSenderFacade{
     }
 
     public void sendDeletingEventEmail(Event event, User author) {
-        EmailTemplate template = new SeriesEventDeletingEmailTemplate(event, event.getAuthor());
+        EmailTemplate template = new SeriesEventDeletingEmailTemplate(event, author);
         emailSender.send(provideEmailReceivers(event, author), template);
     }
 }

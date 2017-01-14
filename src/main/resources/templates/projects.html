@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 	<head>
-		<link rel="stylesheet" th:href="@{/css/vendor/bootstrap/css/bootstrap.min.css}" href="../static/css/vendor/bootstrap/css/bootstrap.min.css" />
+		<link rel="stylesheet" th:href="@{/css/vendor/bootstrap/css/bootstrap.min.css}"
+			  href="../static/css/vendor/bootstrap/css/bootstrap.min.css" />
 		<link rel="stylesheet" th:href="@{/css/flat-ui.css}" href="../static/css/flat-ui.css" />
 		<link rel="stylesheet" th:href="@{/css/font-awesome.css}" href="../static/css/font-awesome.css"/>
 		<link rel='stylesheet' th:href="@{/css/select2.css}" href="../static/css/select2.css"/>
@@ -28,7 +29,7 @@
 						</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link active" href="javascript:void(0);">
+						<a class="nav-link" href="users">
 							<span class="fa fa-user fa-lg nav-icon"></span>
 							<span class="nav-text">Users</span>
 						</a>
@@ -40,13 +41,13 @@
 						</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link" href="locations">
+						<a class="nav-link active" href="locations">
 							<span class="fa fa-flag fa-lg nav-icon"></span>
 							<span class="nav-text">Locations</span>
 						</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link" href="projects">
+						<a class="nav-link active" href="javascript:void(0);">
 							<span class="fa fa-puzzle-piece fa-lg nav-icon"></span>
 							<span class="nav-text">Projects</span>
 						</a>
@@ -60,24 +61,20 @@
 		</aside>
 
 		<script th:inline="javascript">
-			var USERS = /*[[${users}]]*/ null;
+			var PROJECTS = /*[[${projects}]]*/ null;
 			var ROOT_URL = /*[[${#httpServletRequest.requestURI}]]*/ null;
-			var IS_EDITABLE = /*[[ ${#authorization.expression("hasAuthority('user_edit')")} ]]*/ null;
+			var IS_EDITABLE = /*[[ ${#authorization.expression("hasAuthority('project_edit')")} ]]*/ null;
 		</script>
 
 		<script th:src="@{/js/lib/jquery.min.js}" src="../static/js/lib/jquery.min.js"></script>
-		<script th:src="@{/js/lib/flat-ui.js}" src="../static/js/lib/flat-ui.js"></script>
-
 		<script th:src="@{/js/lib/bootstrap.js}" src="../static/js/lib/bootstrap.js"></script>
-		<script th:src="@{/js/lib/radiocheck.js}" src="../static/js/lib/radiocheck.js"></script>
+		<script th:src="@{/js/lib/flat-ui.js}" src="../static/js/lib/flat-ui.js"></script>
 		<script th:src="@{/js/lib/select2.full.js}" src="../static/js/lib/select2.full.js"></script>
-
-		<script th:src="@{/js/lib/moment.min.js}" src="../static/js/lib/moment.min.js"></script>
-		<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-		<script th:src="@{/js/lib/jsgrid.js}" src="../static/js/lib/jsgrid.js"></script>
 		<script th:src="@{/js/lib/toastr.min.js}" src="../static/js/lib/toastr.min.js}"></script>
 		<script th:src="@{/js/common.js}" src="../static/js/common.js"></script>
-		<script th:src="@{/js/users.js}" src="../static/js/users.js"></script>
+
+		<script th:src="@{/js/lib/jsgrid.js}" src="../static/js/lib/jsgrid.js"></script>
+		<script th:src="@{/js/projects.js}" src="../static/js/projects.js"></script>
 	</body>
 
 </html>

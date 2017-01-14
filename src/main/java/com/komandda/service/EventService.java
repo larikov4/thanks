@@ -1,11 +1,9 @@
 package com.komandda.service;
 
-import com.komandda.entity.Equipment;
-import com.komandda.entity.EventChangeItem;
-import com.komandda.entity.Event;
-import com.komandda.entity.User;
+import com.komandda.entity.*;
 import com.komandda.repository.EventRepository;
 import com.komandda.service.email.facade.EventEmailSenderFacade;
+import com.komandda.service.filter.EventFilterDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +12,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
+import static org.springframework.util.StringUtils.isEmpty;
 
 /**
  * Created by yevhen on 28.06.16.
@@ -82,18 +81,31 @@ public class EventService {
         return hidePassword(event);
     }
 
-    public List<Event> findBy(final String locationId,final List<String> names,final List<String> equipmentIds) {
+    public List<Event> findBy(final EventFilterDto dto) {
+        final String locationId = dto.getLocationId();
+        final List<String> names = dto.getNames();
+        final List<String> projectsIds = dto.getProjects();
+        final List<String> equipmentIds = dto.getEquipmentIds();
+
         List<String> safeNames = Optional.ofNullable(names).orElse(Collections.emptyList());
+        List<String> safeProjectsIds = Optional.ofNullable(projectsIds).orElse(Collections.emptyList());
         List<String> safeEquipmentIds = Optional.ofNullable(equipmentIds).orElse(Collections.emptyList());
         List<Event> events = findAll();
-        Stream<Event> locationFilterStream = events.stream()
+        List<Event> projectEvents = events.stream()
+                .filter(event -> Objects.nonNull(event.getProject()))
+                .filter(event -> safeProjectsIds.contains(event.getProject().getId()))
+                .collect(toList());
+        if(safeNames.isEmpty() && safeEquipmentIds.isEmpty() && isEmpty(locationId)){
+            return projectEvents;
+        }
+        Stream<Event> locationFilterStream = projectEvents.stream()
                 .filter(event -> Objects.nonNull(event.getLocation()))
                 .filter(event -> event.getLocation().getId().equals(locationId));
-        Stream<Event> userFilterStream = events.stream()
+        Stream<Event> userFilterStream = projectEvents.stream()
                 .filter(event -> event.getUsers().stream()
                         .map(User::getName)
                         .anyMatch(safeNames::contains));
-        Stream<Event> equipmentFilterStream = events.stream()
+        Stream<Event> equipmentFilterStream = projectEvents.stream()
                 .filter(event -> event.getEquipment()
                         .stream().map(Equipment::getId)
                         .anyMatch(safeEquipmentIds::contains));

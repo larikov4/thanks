@@ -1,9 +1,6 @@
 package com.komandda.web.controller;
 
-import com.komandda.service.EquipmentService;
-import com.komandda.service.EventService;
-import com.komandda.service.LocationService;
-import com.komandda.service.UserService;
+import com.komandda.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +23,9 @@ public class ViewController {
     private LocationService locationService;
 
     @Autowired
+    private ProjectService projectService;
+
+    @Autowired
     private EventService eventService;
 
     @RequestMapping("/")
@@ -34,6 +34,7 @@ public class ViewController {
         model.addAttribute("users", userService.findAll());
         model.addAttribute("equipment", equipmentService.findAll());
         model.addAttribute("locations", locationService.findAll());
+        model.addAttribute("projects", projectService.findAll());
         return "calendar";
     }
 
@@ -55,6 +56,12 @@ public class ViewController {
     public String equipment(Model model) {
         model.addAttribute("equipment", equipmentService.findByDeletedFalse());
         return "equipment";
+    }
+
+    @RequestMapping("/projects")
+    public String project(Model model) {
+        model.addAttribute("projects", projectService.findByDeletedFalse());
+        return "projects";
     }
 
 

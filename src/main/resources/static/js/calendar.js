@@ -1,6 +1,7 @@
 $(document).ready(function() {
 
 	var repo = {
+		projects: {},
 		locations: {},
 		equipment: {},
 		camera: {},
@@ -11,6 +12,7 @@ $(document).ready(function() {
 		users: {},
 		userIds: {},
 		colors:{
+            projects: {},
             locations: {},
             users: {}
 		},
@@ -24,7 +26,7 @@ $(document).ready(function() {
 	var movingEvent = null;
 	var EVENT_REST_URL = "/rest/events";
 	var SERIES_REST_URL = "/rest/series";
-	var BIRTHDAY_EVENT_COLOR = '#BDC3C7';
+	var DEFAULT_EVENT_COLOR = '#BDC3C7';
 	var wasModalSubmitted = false;
 
     function mapEquipmentType(equipment) {
@@ -49,9 +51,15 @@ $(document).ready(function() {
 
     EQUIPMENT = mapDeletedItems(EQUIPMENT);
     USERS = mapDeletedItems(USERS);
+    PROJECTS = mapDeletedItems(PROJECTS);
     LOCATIONS = mapDeletedItems(LOCATIONS);
 
 	(function initEntities(){
+		for(var i=0;i<PROJECTS.length;i++) {
+			repo.projects[PROJECTS[i].name] = PROJECTS[i].id;
+			repo.colors.projects[PROJECTS[i].name] = PROJECTS[i].color;
+		}
+
 		for(var i=0;i<LOCATIONS.length;i++) {
 			repo.locations[LOCATIONS[i].name] = LOCATIONS[i].id;
 			repo.colors.locations[LOCATIONS[i].name] = LOCATIONS[i].color;
@@ -189,21 +197,32 @@ $(document).ready(function() {
     }
 
     $('#filter-location, #filter-user, #filter-camera, #filter-lens, #filter-light, #filter-sound, #filter-accessory')
-        .on('change', function(){
-            var data = {};
-            var $container = $('.filter-sidebar');
-            var filterPrefix = "filter-";
-            fetchUser($container, data, filterPrefix);
-            fetchLocationAndEquipment($container, data, filterPrefix);
-            mapIdsAndNames(data);
-            currentFilter = data;
-            console.log(data);
-            var url = isEmptyFilter(data) ? EVENT_REST_URL : EVENT_REST_URL + "/filter";
-            performFilerRequest(data, url);
-    });
+        .on('change', filterEvents);
+
+    function filterEvents(){
+        var data = {};
+        var $container = $('.filter-sidebar');
+        var filterPrefix = "filter-";
+        fetchUser($container, data, filterPrefix);
+        fetchLocationAndEquipment($container, data, filterPrefix);
+        fetchProjectFilter(data);
+        mapIdsAndNames(data);
+        currentFilter = data;
+        var url = isEmptyFilter(data) ? EVENT_REST_URL : EVENT_REST_URL + "/filter";
+        performFilerRequest(data, url);
+    }
 
     function isEmptyFilter(filter){
-        return !filter || (!filter.location && filter.users.length === 0 && filter.equipment.length === 0)
+        return !filter || (!filter.location && filter.users.length === 0
+            && filter.equipment.length === 0 && filter.projects.length === 0)
+    }
+
+    function fetchProjectFilter(data) {
+        data.projects = [];
+        $('.project.selected').each(function() {
+            data.projects.push(repo.projects[$(this).data('name')]);
+        });
+        return data;
     }
 
     function performFilerRequest(data, url){
@@ -232,6 +251,7 @@ $(document).ready(function() {
         return events.map(function(event){
             event.equipment = mapDeletedItems(event.equipment);
             event.users = mapDeletedItems(event.users);
+            event.project = addDeletedSuffixIfDeleted(event.project);
             event.location = addDeletedSuffixIfDeleted(event.location);
             return splitEquipment(event)
         });
@@ -241,6 +261,7 @@ $(document).ready(function() {
         return events.map(function(event){
             event.equipment = mapDeletedItems(event.equipment);
             event.users = mapDeletedItems(event.users);
+            event.project = addDeletedSuffixIfDeleted(event.project);
             event.location = addDeletedSuffixIfDeleted(event.location);
             event.equipment = mapEquipmentType(event.equipment);
             return splitEquipment(event)
@@ -255,6 +276,7 @@ $(document).ready(function() {
         data.start = $container.find('#start-date').val() + "T" + $('#start-time').val();
         data.end = $container.find('#end-date').val() + "T" + $container.find('#end-time').val();
         data.isSeries = $("#series").prop('checked');
+        fetchProjectField($container, data);
         fetchUser($container, data);
         if($("#recording").prop('checked')) {
             fetchLocationAndEquipment($container, data);
@@ -262,9 +284,21 @@ $(document).ready(function() {
         return data;
     }
 
-    function fetchUser($container, data, prefix){
-        prefix = prefix || '';
-        var currentId = '#' + prefix + 'user';
+    function fetchProjectField($container, data) {
+        var projectName = $container.find('#project').val();
+        data.project = null;
+        if(projectName) {
+            data.project = {
+                id: repo.projects[projectName],
+                name: projectName
+            };
+        }
+        return data;
+    }
+
+    function fetchUser($container, data, filterPrefix){
+        filterPrefix = filterPrefix || '';
+        var currentId = '#' + filterPrefix + 'user';
         var userFieldValue = $container.find(currentId).val() ? $container.find(currentId).val() : [];
         data.users = userFieldValue.map(function(name){
             return {
@@ -276,9 +310,9 @@ $(document).ready(function() {
         return data;
     }
 
-    function fetchLocationAndEquipment($container, data, prefix){
-        prefix = prefix || '';
-        var locationName = $container.find('#' + prefix + 'location').val();
+    function fetchLocationAndEquipment($container, data, filterPrefix){
+        filterPrefix = filterPrefix || '';
+        var locationName = $container.find('#' + filterPrefix + 'location').val();
         data.location = null;
         if(locationName) {
             data.location = {
@@ -287,16 +321,16 @@ $(document).ready(function() {
             };
         }
 
-        data.equipment = fetchEquipmentByType('camera', [], $container, prefix);
-        data.equipment = fetchEquipmentByType('lens', data.equipment, $container, prefix);
-        data.equipment = fetchEquipmentByType('sound', data.equipment, $container, prefix);
-        data.equipment = fetchEquipmentByType('light', data.equipment, $container, prefix);
-        data.equipment = fetchEquipmentByType('accessory', data.equipment, $container, prefix);
+        data.equipment = fetchEquipmentByType('camera', [], $container, filterPrefix);
+        data.equipment = fetchEquipmentByType('lens', data.equipment, $container, filterPrefix);
+        data.equipment = fetchEquipmentByType('sound', data.equipment, $container, filterPrefix);
+        data.equipment = fetchEquipmentByType('light', data.equipment, $container, filterPrefix);
+        data.equipment = fetchEquipmentByType('accessory', data.equipment, $container, filterPrefix);
         return data;
     }
 
-    function fetchEquipmentByType(type, equipment, $container, prefix){
-        var currentId = '#' + prefix + type;
+    function fetchEquipmentByType(type, equipment, $container, filterPrefix){
+        var currentId = '#' + filterPrefix + type;
         if($container.find(currentId).val()) {
             currentTypeEquipment = $container.find(currentId).val().map(function(name){
                 return {
@@ -413,6 +447,7 @@ $(document).ready(function() {
 		if(currentEvent) {
 	        toggleRecordingCheckbox(currentEvent.location);
 		}
+		fillSelect($('#project'), filterDeletedByName(Object.keys(repo.projects)));
 	    var data = {
             start:$('#start-date').val() + "T" + $('#start-time').val(),
             end:$('#end-date').val() + "T" + $('#end-time').val()
@@ -560,6 +595,40 @@ $(document).ready(function() {
 		});
 	}
 
+    function generateCustomButtons(){
+        var buttons = {};
+        buttons.weekdays = {
+            text: 'Weekdays',
+            click: function() {
+                $('#calendar').fullCalendar( 'changeView', 'agendaWeekdays');
+            }
+        };
+        for(var i=0;i<Object.keys(repo.projects).length;i++) {
+            var projectName = Object.keys(repo.projects)[i];
+            buttons[projectName] = {
+                text: ' ',
+                click: function() {
+                    $(this).toggleClass('selected');
+                    filterEvents();
+                }
+            }
+        }
+        return buttons;
+    }
+
+    function generateHeader() {
+        var left = 'prev,next today ';
+        for(var i=0;i<Object.keys(repo.projects).length;i++) {
+            var projectName = Object.keys(repo.projects)[i];
+            left +=  projectName + ',';
+        }
+        return {
+            left: left,
+            center: 'title',
+            right: 'month,agendaWeek,weekdays,agendaDay'
+        }
+    }
+
 	$('#calendar').fullCalendar({
 	    views: {
             agendaWeekdays: {
@@ -567,19 +636,8 @@ $(document).ready(function() {
                 hiddenDays: [0, 6]
             }
         },
-        customButtons: {
-            weekdays: {
-                text: 'weekdays',
-                click: function() {
-                    $('#calendar').fullCalendar( 'changeView', 'agendaWeekdays');
-                }
-            }
-        },
-		header: {
-			left: 'prev,next today',
-			center: 'title',
-			right: 'month,agendaWeek,weekdays,agendaDay'
-		},
+        customButtons: generateCustomButtons(),
+		header: generateHeader(),
 		events:mapEvents(EVENTS),
 		editable:IS_EDITABLE,
 		defaultView:'agendaWeekdays',
@@ -630,6 +688,17 @@ $(document).ready(function() {
                 });
 	 	    })();
 
+            (function colorProjects() {
+                for(var i=0;i<Object.keys(repo.projects).length;i++) {
+                    var projectName = Object.keys(repo.projects)[i];
+                    $('.fc-left').find('.btn-group').eq(1)
+                        .find('.btn').eq(i)
+                            .css("background-color", repo.colors.projects[projectName])
+                            .addClass("project")
+                            .data("name", projectName);
+                }
+            })();
+
 	 	    if(view.type.contains('agenda')) {
                 setColsWidth();
 	 	    }
@@ -651,10 +720,10 @@ $(document).ready(function() {
                 var standardColWidth = totalWidth / (wideDaysAmount + narrowDaysAmount);
                 var narrowColWidth = standardColWidth;
                 if(wideDaysAmount > 1){
-                    narrowColWidth *= 0.7;
+                    narrowColWidth *= 0.5;
                 }
                 else {
-                    narrowColWidth *= 0.85;
+                    narrowColWidth *= 0.65;
                 }
                 var wideColWidth = (totalWidth - narrowDaysAmount * narrowColWidth) / (wideDaysAmount + 1);
                 for(var i=tableCols.length - 1; i >= 1 ; i--) {
@@ -695,10 +764,18 @@ $(document).ready(function() {
 		        if(duration>0) {
 		            movingEvent.start = movingEvent.startPoint;
                     movingEvent.end = date.add(30, 'minute');
+                    movingEvent.title = movingEvent.start.hours() + ":";
+                    movingEvent.title += movingEvent.start.minutes() === 0 ? "00" : movingEvent.start.minutes()
+                    movingEvent.title += " - " + movingEvent.end.hours() + ":";
+                    movingEvent.title += movingEvent.end.minutes() === 0 ? "00" : movingEvent.end.minutes();
                     $('#calendar').fullCalendar('renderEvent', movingEvent, true);
 		        } else if(duration<-30) {
                     movingEvent.start = date;
                     movingEvent.end = movingEvent.startPoint;
+                    movingEvent.title = movingEvent.start.hours() + ":";
+                    movingEvent.title += movingEvent.start.minutes() === 0 ? "00" : movingEvent.start.minutes()
+                    movingEvent.title += " - " + movingEvent.end.hours() + ":";
+                    movingEvent.title += movingEvent.end.minutes() === 0 ? "00" : movingEvent.end.minutes();
                     $('#calendar').fullCalendar('renderEvent', movingEvent, true);
                 } else {
                     movingEvent.start = movingEvent.startPoint;
@@ -722,12 +799,12 @@ $(document).ready(function() {
 		        $target.addClass('past-event');
 		    }
 		    if(event.isBirthday) {
-		        $target.css('background-color', BIRTHDAY_EVENT_COLOR);
-                $target.css('border-color', BIRTHDAY_EVENT_COLOR);
+		        event.editable = false;
+		    }
+		    if(event.project) {
+                $target.css('background-color', repo.colors.projects[event.project.name]);
 		    } else {
-                var authorColor = repo.colors.users[event.author.name];
-                $target.css('background-color', authorColor);
-                $target.css('border-color', authorColor);
+                $target.css('background-color', DEFAULT_EVENT_COLOR);
 		    }
 
 			if(event.isStub && !$target.find('.fc-content').hasClass('empty-field')) {
@@ -758,6 +835,14 @@ $(document).ready(function() {
                         );
                     }
 				}
+				if($container.children().length === 0 && !event.isBirthday) {
+				   var $recordingContainer = $('<div>').addClass('recording-container');
+				   var $recordingShadow = $('<div>').addClass('recording-shadow');
+				   var $recordingText = $('<span>').text('монтаж');
+				   $recordingContainer.append($recordingShadow);
+				   $recordingContainer.append($recordingText);
+				   $target.append($recordingContainer);
+				}
 				$target.append($container);
                 if(event.users){
                     var gridClass = "fc-event-username col-md-" + 12 / event.users.length;
@@ -766,19 +851,11 @@ $(document).ready(function() {
                     for(var i=0;i<event.users.length;i++){
                         gridHolder.append(gridElement.clone()
                             .css('background-color', repo.colors.users[event.users[i].name])
-                            .text(trimName(event.users[i].name))
+                            .text(event.users[i].name)
                         );
                     }
                 }
 				$target.append(gridHolder);
-
-				function trimName(name){
-				    return name
-				        .split(' ')
-				        .map(function(str){ return str.trim()[0]; })
-				        .filter(function(char){ return char!=='('})
-				        .join('')
-				}
 			}
 		},
 		eventAfterRender: function (event, $target){
@@ -809,6 +886,7 @@ $(document).ready(function() {
 							$container.find('.description').empty();
 							$container.find('.author').empty();
 							$container.find('.created').empty();
+							$container.find('.project').empty();
 							$container.find('.location').empty();
 							$container.find('.users').empty();
 							$container.find('.camera').empty();
@@ -816,7 +894,9 @@ $(document).ready(function() {
 							$container.find('.sound').empty();
 							$container.find('.light').empty();
 							$container.find('.accessory').empty();
+							$container.find('.video-editing').hide();
 							$container.find('.description-container').hide();
+							$container.find('.project-container').hide();
 							$container.find('.location-container').hide();
 							$container.find('.camera-container').hide();
 							$container.find('.lens-container').hide();
@@ -828,6 +908,16 @@ $(document).ready(function() {
 
 						function fillPopover(event) {
 							var $popover = $('#popover-container');
+							if(!hasEquipment(event)) {
+							    $popover.find('.video-editing').show();
+							}
+							function hasEquipment(event) {
+							    return event.camera.length !== 0
+							        || event.lens.length !== 0
+							        || event.light.length !== 0
+							        || event.sound.length !== 0
+							        || event.accessory.length !== 0;
+							}
 							function formatDuration(event){
 								if(event.start.format('YYYY-MM-DD') === event.end.format('YYYY-MM-DD')){
 									return event.start.format('YYYY-MM-DD') + " " + event.start.format('HH:mm') + " - " + event.end.format('HH:mm');
@@ -838,6 +928,10 @@ $(document).ready(function() {
 							if(event.description) {
 							    $popover.find('.description-container').show();
 							    $popover.find('.description').text(event.description);
+                            }
+                            if(event.project) {
+                                $popover.find('.project-container').show();
+                                $popover.find('.project').text(event.project.name);
                             }
 							$popover.find('.author').text(event.author.name);
                             $popover.find('.created').text(moment(event.created).format('YYYY-MM-DD HH:mm'));
@@ -876,6 +970,9 @@ $(document).ready(function() {
                                     $modal.find("#series").prop('checked', isSeries);
                                     $modal.find("#series").prop( "disabled", true );
                                     fillSelects(isSeries);
+                                    if(event.project) {
+                                        $modal.find("#project").val(event.project.name).trigger('change');
+                                    }
                                     $modal.modal('show');
 							    }
 							    if(!!event.seriesId){
@@ -1020,9 +1117,10 @@ $(document).ready(function() {
             currentBubbleContainer
                 .append(generateBubble(prevDiff.title, diff.title))
                 .append(generateBubble(prevDiff.description, diff.description))
+                .append(generateBubble(printName(prevDiff.project), printName(diff.project)))
                 .append(generateBubble(printDate(prevDiff.start), printDate(diff.start)))
                 .append(generateBubble(printDate(prevDiff.end), printDate(diff.end)))
-                .append(generateBubble(printLocation(prevDiff.location), printLocation(diff.location)));
+                .append(generateBubble(printName(prevDiff.location), printName(diff.location)));
 
             appendBubblesForArrays(prevDiff.users, diff.users, currentBubbleContainer);
             appendBubblesForArrays(prevDiff.camera, diff.camera, currentBubbleContainer);
@@ -1040,8 +1138,8 @@ $(document).ready(function() {
             return date ? date.replace('T',' ') : '';
         }
 
-        function printLocation(location) {
-            return location ? location.name : '';
+        function printName(entity) {
+            return entity ? entity.name : '';
         }
 
         function printArray(array) {
@@ -1123,6 +1221,10 @@ $(document).ready(function() {
 		$container.find('#start-time').val('0:00').trigger('change');
 		$container.find('#end-date').val('');
 		$container.find('#end-time').val('0:00').trigger('change');
+
+        $container.find('#project').select2('val', '');
+        $container.find('#project').select2('destroy');
+        $container.find('#project').select2();
 
 		$container.find('#location').select2('val', '');
 		$container.find('#location').select2('destroy');
@@ -1400,7 +1502,7 @@ $(document).ready(function() {
 
     function showFormRightPart() {
         $('.modal-edit .modal-dialog').animate(
-            { width:'848px' },
+            { width:'850px' },
             {
                 duration: 200,
                 complete:function(){
@@ -1414,7 +1516,7 @@ $(document).ready(function() {
     function hideFormRightPart() {
         $('.right-part').addClass('hidden-part');
         $('.modal-edit .modal-dialog').animate(
-            { width:'426px' },
+            { width:'428px' },
             {
                 duration: 200,
             }
@@ -1500,7 +1602,8 @@ $(document).ready(function() {
                     .length != 0
                 || currentFilter.equipment
                    .filter(function(item){return mapIds(event.equipment).contains(item)})
-                   .length != 0);
+                   .length != 0)
+                || currentFilter.projects.contains(event.project.id);
         }
     })();
 });
