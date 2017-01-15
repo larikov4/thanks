@@ -1556,6 +1556,10 @@ $(document).ready(function() {
                     $('#calendar').fullCalendar('removeEvents', deletedEvent.id);
                 }
             });
+        }, function(error) {
+            if(error.contains("Whoops! Lost connection")) {
+                toastr.error("Please refresh the page", "You've been disconnected", {timeOut: 0})
+            }
         });
 
         function doesSatisfyCurrentFilter(event){
