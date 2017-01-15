@@ -756,45 +756,29 @@ $(document).ready(function() {
 			}
 			$modal.modal('show');
 		},
-		dayHit: !IS_EDITABLE ? function(){} : function(date, x) {
-		    currentEvent = null;
-		    if(movingEvent){
-                $('#calendar').fullCalendar('removeEvents', movingEvent.id);
-		        var duration = getDurationInMinutesByDates(movingEvent.startPoint.toDate(), date.toDate());
-		        if(duration>0) {
-		            movingEvent.start = movingEvent.startPoint;
-                    movingEvent.end = date.add(30, 'minute');
-                    movingEvent.title = movingEvent.start.hours() + ":";
-                    movingEvent.title += movingEvent.start.minutes() === 0 ? "00" : movingEvent.start.minutes()
-                    movingEvent.title += " - " + movingEvent.end.hours() + ":";
-                    movingEvent.title += movingEvent.end.minutes() === 0 ? "00" : movingEvent.end.minutes();
-                    $('#calendar').fullCalendar('renderEvent', movingEvent, true);
-		        } else if(duration<-30) {
-                    movingEvent.start = date;
-                    movingEvent.end = movingEvent.startPoint;
-                    movingEvent.title = movingEvent.start.hours() + ":";
-                    movingEvent.title += movingEvent.start.minutes() === 0 ? "00" : movingEvent.start.minutes()
-                    movingEvent.title += " - " + movingEvent.end.hours() + ":";
-                    movingEvent.title += movingEvent.end.minutes() === 0 ? "00" : movingEvent.end.minutes();
-                    $('#calendar').fullCalendar('renderEvent', movingEvent, true);
-                } else {
-                    movingEvent.start = movingEvent.startPoint;
-                    movingEvent.end = movingEvent.startPoint;
-                }
-		    } else {
-		        movingEvent = {
-		            startPoint:date,
-		            start:date,
-                    end:date,
-		            id: 'stub id',
-		            isStub:true,
-		            author: {
-		                name:currentUser.name
-		            }
-		        };
-		    }
-		},
+        selectable:IS_EDITABLE,
+        selectHelper: IS_EDITABLE,
+		select: function(start, end) {
+            if(isDurationMoreThanOrEqualsOneHourByDates(start.toDate(), end.toDate())){
+                var $modal = $('.modal-edit');
+                $modal.find('#start-date').val(start.format('YYYY-MM-DD'));
+                $modal.find('#end-date').val(end.format('YYYY-MM-DD'));
+                $modal.find('#start-time').select2('val', start.hour() + ":" + padZero(start.minute()));
+                $modal.find('#end-time').select2('val', end.hour() + ":" + padZero(end.minute()));
+                $modal.find('#end-time').trigger('change');
+                $modal.modal('show');
+            }
+            $('#calendar').fullCalendar('unselect');
+        },
 		eventRender: function (event, $target, view) {
+		    event.isStub = !event.title;
+		    if(event.isStub){
+                event.title = event.start.hours() + ":";
+                event.title += event.start.minutes() === 0 ? "00" : event.start.minutes()
+                event.title += " - " + event.end.hours() + ":";
+                event.title += event.end.minutes() === 0 ? "00" : event.end.minutes();
+                $target.find('.fc-content').append($('<div>').addClass('fc-title').text(event.title));
+		    }
 		    if(new Date(event.end).getTime() < getCurrentTime()){
 		        $target.addClass('past-event');
 		    }
@@ -806,10 +790,6 @@ $(document).ready(function() {
 		    } else {
                 $target.css('background-color', DEFAULT_EVENT_COLOR);
 		    }
-
-			if(event.isStub && !$target.find('.fc-content').hasClass('empty-field')) {
-                $target.find('.fc-content').addClass('empty-field');
-			}
 			if(view.type.contains("agend") && !event.isStub){
 			    if(event.description) {
 			        var descriptionElement = $("<span>")
@@ -830,9 +810,7 @@ $(document).ready(function() {
 				appendEquipment('accessory');
 				function appendEquipment(type) {
                     for(var i=0;event[type] && i<event[type].length;i++){
-                        $container.append($element.clone().text(event[type][i].name + "")
-                            //.css('color', repo.colors.equipment[event.equipment[i].name])
-                        );
+                        $container.append($element.clone().text(event[type][i].name + ""));
                     }
 				}
 				if($container.children().length === 0 && !event.isBirthday) {
@@ -1000,20 +978,6 @@ $(document).ready(function() {
         now = now.substring(0, now.length-6);
         return new Date(now).getTime();
     }
-
-    $('#calendar').on('mouseup', function(){
-        if(movingEvent && isDurationMoreThanOrEqualsOneHourByDates(movingEvent.start.toDate(), movingEvent.end.toDate())){
-            $('#calendar').fullCalendar('removeEvents', movingEvent.id);
-            var $modal = $('.modal-edit');
-            $modal.find('#start-date').val(movingEvent.start.format('YYYY-MM-DD'));
-            $modal.find('#end-date').val(movingEvent.end.format('YYYY-MM-DD'));
-            $modal.find('#start-time').select2('val', movingEvent.start.hour() + ":" + padZero(movingEvent.start.minute()));
-            $modal.find('#end-time').select2('val', movingEvent.end.hour() + ":" + padZero(movingEvent.end.minute()));
-            $modal.find('#end-time').trigger('change');
-            $modal.modal('show');
-            movingEvent = null;
-        }
-    })
 
     renderBirthdayEvent();
 
