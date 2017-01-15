@@ -19,6 +19,7 @@ package com.komandda;
 import com.komandda.entity.Permission;
 import com.komandda.entity.User;
 import com.komandda.repository.EquipmentRepository;
+import com.komandda.repository.EventRepository;
 import com.komandda.repository.LocationRepository;
 import com.komandda.repository.UserRepository;
 import com.komandda.service.EquipmentService;
@@ -35,12 +36,17 @@ import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static java.util.stream.Collectors.toList;
+
 @SpringBootApplication
 @EnableAsync
 @EnableScheduling
 public class ApplicationStartPoint {
 	private static final Permission EVENT_EDIT_PERMISSION = new Permission("id", "event_edit");
 	private static final Permission SELF_EVENT_EDIT_PERMISSION = new Permission("id", "self_event_edit");
+
+	@Autowired
+	private EventRepository eventRepository;
 
 	@Autowired
 	private UserRepository userRepository;
@@ -61,6 +67,16 @@ public class ApplicationStartPoint {
         setDeletedToFalse();
 		setNameIfAbsent();
 		convertPermissions();
+		removeEquipmentDuplicates();
+	}
+
+	private void removeEquipmentDuplicates() {
+		eventRepository.findAll().stream()
+				.map(event -> {
+					event.setEquipment(event.getEquipment().stream().distinct().collect(toList()));
+					return event;
+				})
+				.forEach(eventRepository::save);
 	}
 
 	private void convertPermissions() {
