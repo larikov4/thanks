@@ -91,24 +91,26 @@ public class EventService {
         List<String> safeProjectsIds = Optional.ofNullable(projectsIds).orElse(Collections.emptyList());
         List<String> safeEquipmentIds = Optional.ofNullable(equipmentIds).orElse(Collections.emptyList());
         List<Event> events = findAll();
-        List<Event> projectEvents = events.stream()
-                .filter(event -> Objects.nonNull(event.getProject()))
-                .filter(event -> safeProjectsIds.contains(event.getProject().getId()))
-                .collect(toList());
-        if(safeNames.isEmpty() && safeEquipmentIds.isEmpty() && isEmpty(locationId)){
-            return projectEvents;
+        if(!safeProjectsIds.isEmpty()) {
+            events = events.stream()
+                    .filter(event -> Objects.nonNull(event.getProject()))
+                    .filter(event -> safeProjectsIds.contains(event.getProject().getId()))
+                    .collect(toList());
+            if(safeNames.isEmpty() && safeEquipmentIds.isEmpty() && isEmpty(locationId)){
+                return events;
+            }
         }
-        Stream<Event> locationFilterStream = projectEvents.stream()
-                .filter(event -> Objects.nonNull(event.getLocation()))
-                .filter(event -> event.getLocation().getId().equals(locationId));
-        Stream<Event> userFilterStream = projectEvents.stream()
-                .filter(event -> event.getUsers().stream()
-                        .map(User::getName)
-                        .anyMatch(safeNames::contains));
-        Stream<Event> equipmentFilterStream = projectEvents.stream()
-                .filter(event -> event.getEquipment()
-                        .stream().map(Equipment::getId)
-                        .anyMatch(safeEquipmentIds::contains));
+        Stream<Event> locationFilterStream = events.stream()
+                    .filter(event -> Objects.nonNull(event.getLocation()))
+                    .filter(event -> event.getLocation().getId().equals(locationId));
+        Stream<Event> userFilterStream = events.stream()
+                    .filter(event -> event.getUsers().stream()
+                            .map(User::getName)
+                            .anyMatch(safeNames::contains));
+        Stream<Event> equipmentFilterStream = events.stream()
+                    .filter(event -> event.getEquipment()
+                            .stream().map(Equipment::getId)
+                            .anyMatch(safeEquipmentIds::contains));
         return Stream.concat(Stream.concat(locationFilterStream, userFilterStream), equipmentFilterStream)
                 .distinct()
                 .collect(toList());
