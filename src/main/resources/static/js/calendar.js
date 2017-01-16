@@ -1574,6 +1574,34 @@ $(document).ready(function() {
                 || currentFilter.projects.contains(event.project.id);
         }
     })();
+
+    (function online(){
+        sendRequest();
+        setInterval(sendRequest, 4500)
+
+        var onlineUsers = [];
+        var $container = $('#online-container')
+        var $bubble = $('<div>').addClass('online-bubble');
+        function sendRequest(){
+            $.ajax({
+                type: "GET",
+                url: "/rest/online",
+                contentType: "application/json",
+            }).success(function(data){
+                var usersToRemove = onlineUsers.filter(function(item){return !data.contains(item)});
+                var usersToAdd = data.filter(function(item){return !onlineUsers.contains(item)});
+                usersToRemove.forEach(function(element){
+                    var index = onlineUsers.indexOf(element);
+                    onlineUsers.splice(index, 1);
+                    $container.find('.' + element).fadeOut(300, function() { $(this).remove(); });
+                });
+                usersToAdd.forEach(function(element){
+                    onlineUsers.push(element);
+                    $bubble.clone().addClass(element).text(element).hide().appendTo($container).fadeIn(300);//TODO element should be unique
+                });
+            })
+        }
+    })();
 });
 
 

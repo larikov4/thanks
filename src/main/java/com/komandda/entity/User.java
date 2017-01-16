@@ -16,7 +16,7 @@ import java.util.List;
  * @author Yevhen_Larikov
  */
 @JsonAutoDetect
-public class User implements UserDetails {
+public class User implements UserDetails, Comparable<User> {
 
     @Id
     private String id;
@@ -175,5 +175,10 @@ public class User implements UserDetails {
     @Override
     public int hashCode() {
         return Objects.hashCode(id);
+    }
+
+    @Override
+    public int compareTo(User anotherUser) {
+        return id.compareTo(anotherUser.getId());
     }
 }
