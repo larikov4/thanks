@@ -852,9 +852,9 @@ $(document).ready(function() {
 					html: true,
 					animation:true,
 					placement:function(popover, event){
-                        var leftOffset = this.getPosition().left
-                        var popoverWidth = 250 + 50;
-					    return $('#calendar').width() - leftOffset > popoverWidth ? 'right' : 'left';
+                        var offset = this.getPosition().left + this.$element.width();
+                        var popoverWidth = 250 + parseInt($('.calendar-main').css('padding-left'));
+					    return $('#calendar').width() - offset > popoverWidth ? 'right' : 'left';
                     },
 					content: function() {
 						function clearPopover() {
