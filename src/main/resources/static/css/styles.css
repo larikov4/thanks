@@ -44,7 +44,7 @@ input.table-input {
 
 #calendar {
     margin: 0 auto;
-    margin-bottom: 12px;
+    margin-bottom: 11px;
 }
 
 .modal-body input{
@@ -865,10 +865,6 @@ label.error {
     background-color: #C0392B;
 }
 
-/*.fc-toolbar .btn-inverse {*/
-    /*background-color: #000614;*/
-/*}*/
-
 .fc-event:hover {
     z-index: 1000!important;
 }
@@ -1020,17 +1016,15 @@ select.ui-datepicker-year {
     margin-bottom: 11px;
 }
 
-@media (min-height: 970px) {
-    .calendar-main {
-        padding: 20px 2px 0 2px;
-    }
+.calendar-main {
+    padding: 20px 2px 0 2px;
+}
 
-    .fc-toolbar {
-        padding-left: 50px;
-        padding-right: 50px;
-    }
+.fc-toolbar {
+    padding-left: 50px;
+    padding-right: 50px;
+}
 
-    #online-container {
-        padding-left: 11px;
-    }
+#online-container {
+    padding-left: 11px;
 }

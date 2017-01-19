@@ -629,6 +629,18 @@ $(document).ready(function() {
         }
     }
 
+    function adaptCalendarHeight() {
+        var height = Math.min(getActualHeight() - 73, 1485);
+        $('#calendar').fullCalendar('option', 'height', height);
+
+        function getActualHeight() {
+            var body = document.body,
+                html = document.documentElement;
+            return Math.max( body.scrollHeight, body.offsetHeight,
+                                   html.clientHeight, html.scrollHeight, html.offsetHeight );
+        }
+    }
+
 	$('#calendar').fullCalendar({
 	    views: {
             agendaWeekdays: {
@@ -648,7 +660,7 @@ $(document).ready(function() {
 	 	axisFormat: 'H:mm',
         firstHour:6,
         columnFormat: 'dddd D.M',
-        height: 900,
+        height: 400,
         nowIndicator: true,
 	 	eventClick: IS_EDITABLE? onEventClick : function(){},
 	 	eventDrop: function(event, delta, revert){
@@ -669,6 +681,9 @@ $(document).ready(function() {
 	 			proceed: updateEvent,
 	 			revert: revert
 	 		});
+	 	},
+	 	eventAfterAllRender(){
+	 	    adaptCalendarHeight();
 	 	},
 	 	viewRender: function(view, element){
 	 	    (function modifyButtons(){
