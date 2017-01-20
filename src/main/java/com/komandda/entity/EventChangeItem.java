@@ -1,6 +1,5 @@
 package com.komandda.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
@@ -16,6 +15,8 @@ public class EventChangeItem {
 
     private Date date;
 
+    private boolean isDeletedEvent;
+
     private String diffItemId;
 
     private Event diff;
@@ -28,6 +29,7 @@ public class EventChangeItem {
         this.date = date;
         this.diff = diff;
         this.diffItemId = diff.getId();
+        isDeletedEvent = false;
     }
 
     public String getId() {
@@ -68,6 +70,14 @@ public class EventChangeItem {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public boolean isDeletedEvent() {
+        return isDeletedEvent;
+    }
+
+    public void setDeletedEvent(boolean deletedEvent) {
+        isDeletedEvent = deletedEvent;
     }
 
     @Override

@@ -152,7 +152,7 @@ nav {
 }
 .nav-item {
   display: block;
-  padding: 20px;
+  padding: 20px 15px;
   border-top: 1px dashed #222935;
 }
 .nav-item:first-child {

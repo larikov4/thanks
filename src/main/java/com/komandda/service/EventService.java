@@ -78,6 +78,9 @@ public class EventService {
         if(event.getSeriesId()==null) {
             emailSender.sendDeletingEventEmail(event, author);
         }
+        EventChangeItem eventChangeItem = new EventChangeItem(author, new Date(), event);
+        eventChangeItem.setDeletedEvent(true);
+        changelog.insert(eventChangeItem);
         return hidePassword(event);
     }
 

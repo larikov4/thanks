@@ -28,6 +28,9 @@ public class ViewController {
     @Autowired
     private EventService eventService;
 
+    @Autowired
+    private EventChangelogService eventChangelogService;
+
     @RequestMapping("/")
     public String home(Model model) {
         model.addAttribute("events", eventService.findAll());
@@ -62,6 +65,12 @@ public class ViewController {
     public String project(Model model) {
         model.addAttribute("projects", projectService.findByDeletedFalse());
         return "projects";
+    }
+
+    @RequestMapping("/deletedEvents")
+    public String deletedEvents(Model model) {
+        model.addAttribute("eventChangeItems", eventChangelogService.findDeleted());
+        return "deletedEvents";
     }
 
 

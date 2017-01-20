@@ -55,9 +55,9 @@ $grid.jsGrid({
     sorting: false,
 
     fields: [
-        { name: "name", type: "text", width: 150, validate: "required" },
+        { title: "Name", name: "name", type: "text", width: 150, validate: "required" },
         //{ name: "color", type: "select", width: 50, items: COLORS, valueField: "hex", textField: "name", validate: "required" },
-        { name: "type", type: "select", width: 50, items: TYPES, valueField: "name", textField: "name", validate: "required" },
+        { title: "Type", name: "type", type: "select", width: 50, items: TYPES, valueField: "name", textField: "name", validate: "required" },
         IS_EDITABLE ? { type: "control", width: 15 }:''
     ]
 });

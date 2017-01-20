@@ -159,14 +159,14 @@ $grid.jsGrid({
     editing: IS_EDITABLE,
     sorting: false,
     fields: [
-        { name: "username", type: "text", width: 40, validate: "required" },
-        { name: "password", type: "text", width: 30, validate: "required" },
-        { name: "name", type: "text", width: 30 },
-        { name: "phone", type: "text", width: 30 },
-        { name: "birthday", type: "date", width: 30 },
-        { name: "email", type: "text", width: 30 },
-        { name: "color", type: "select", width: 50, items: COLORS, valueField: "hex", textField: "name", validate: "required" },
-        { name: "permission", type: "select", width: 50, items: PERMISSIONS, valueField: "name", textField: "name", validate: "required" },
+        { title: "Username", name: "username", type: "text", width: 40, validate: "required" },
+        { title: "Password", name: "password", type: "text", width: 30, validate: "required" },
+        { title: "Name", name: "name", type: "text", width: 30 },
+        { title: "Phone", name: "phone", type: "text", width: 30 },
+        { title: "Birthday", name: "birthday", type: "date", width: 30 },
+        { title: "Email", name: "email", type: "text", width: 30 },
+        { title: "Color", name: "color", type: "select", width: 50, items: COLORS, valueField: "hex", textField: "name", validate: "required" },
+        { title: "Permission", name: "permission", type: "select", width: 50, items: PERMISSIONS, valueField: "name", textField: "name", validate: "required" },
         IS_EDITABLE ? { type: "control", width: 15 } : ''
     ]
 });

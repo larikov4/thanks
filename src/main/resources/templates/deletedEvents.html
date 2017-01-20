@@ -15,7 +15,7 @@
 
 	<body>
 		<main class="entity-main">
-			<div id='jsGrid'></div>
+			<div id='jsGrid' class="deleted-events"></div>
 		</main>
 
 		<aside class="navigation-sidebar">
@@ -41,7 +41,7 @@
 						</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link active" href="javascript:void(0);">
+						<a class="nav-link" href="locations">
 							<span class="fa fa-flag fa-lg nav-icon"></span>
 							<span class="nav-text">Locations</span>
 						</a>
@@ -53,7 +53,7 @@
 						</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link" href="deletedEvents">
+						<a class="nav-link active" href="javascript:void(0);">
 							<span class="fa fa-trash fa-lg nav-icon"></span>
 							<span class="nav-text">Deleted events</span>
 						</a>
@@ -67,9 +67,8 @@
 		</aside>
 
 		<script th:inline="javascript">
-			var LOCATIONS = /*[[${locations}]]*/ null;
+			var HISTORY = /*[[${eventChangeItems}]]*/ null;
 			var ROOT_URL = /*[[${#httpServletRequest.requestURI}]]*/ null;
-			var IS_EDITABLE = /*[[ ${#authorization.expression("hasAuthority('location_edit')")} ]]*/ null;
 		</script>
 
 		<script th:src="@{/js/lib/jquery.min.js}" src="../static/js/lib/jquery.min.js"></script>
@@ -80,7 +79,7 @@
 		<script th:src="@{/js/common.js}" src="../static/js/common.js"></script>
 
 		<script th:src="@{/js/lib/jsgrid.js}" src="../static/js/lib/jsgrid.js"></script>
-		<script th:src="@{/js/locations.js}" src="../static/js/locations.js"></script>
+		<script th:src="@{/js/deletedEvents.js}"></script>
 	</body>
 
 </html>
