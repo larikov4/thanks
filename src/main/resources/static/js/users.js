@@ -167,6 +167,7 @@ $grid.jsGrid({
         { title: "Email", name: "email", type: "text", width: 30 },
         { title: "Color", name: "color", type: "select", width: 50, items: COLORS, valueField: "hex", textField: "name", validate: "required" },
         { title: "Permission", name: "permission", type: "select", width: 50, items: PERMISSIONS, valueField: "name", textField: "name", validate: "required" },
+        { title: "Operator", name: "operator", type: "checkbox", width: 20},
         IS_EDITABLE ? { type: "control", width: 15 } : ''
     ]
 });

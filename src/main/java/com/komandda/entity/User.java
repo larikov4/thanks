@@ -39,6 +39,8 @@ public class User implements UserDetails, Comparable<User> {
 
     private boolean deleted;
 
+    private boolean operator;
+
     /* Spring Security related fields*/
     private List<Permission> authorities;
     private boolean accountNonExpired = true;
@@ -109,6 +111,14 @@ public class User implements UserDetails, Comparable<User> {
 
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public boolean isOperator() {
+        return operator;
+    }
+
+    public void setOperator(boolean operator) {
+        this.operator = operator;
     }
 
     @Override

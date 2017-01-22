@@ -1,6 +1,7 @@
 package com.komandda.web.controller;
 
 import com.komandda.service.*;
+import com.komandda.service.dashboard.DashboardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +28,9 @@ public class ViewController {
 
     @Autowired
     private EventService eventService;
+
+    @Autowired
+    private DashboardService dashboardService;
 
     @Autowired
     private EventChangelogService eventChangelogService;
@@ -71,6 +75,15 @@ public class ViewController {
     public String deletedEvents(Model model) {
         model.addAttribute("eventChangeItems", eventChangelogService.findDeleted());
         return "deletedEvents";
+    }
+
+    @RequestMapping("/dashboard")
+    public String dashboard(Model model) {
+        model.addAttribute("users", userService.findByDeletedFalse());
+        model.addAttribute("projects", projectService.findByDeletedFalse());
+        model.addAttribute("locations", locationService.findByDeletedFalse());
+        model.addAttribute("dashboard", dashboardService.buildDashboard());
+        return "dashboard";
     }
 
 

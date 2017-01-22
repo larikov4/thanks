@@ -1028,3 +1028,19 @@ select.ui-datepicker-year {
 #online-container {
     padding-left: 11px;
 }
+
+.dashboard {
+    text-align:center;
+}
+
+.chart-container {
+    width: 500px;
+    height: 250px;
+    display:inline-block;
+    margin-right: 30px;
+}
+
+.chart-container.pie {
+    width: 400px;
+    height: 400px;
+}
