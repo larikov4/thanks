@@ -19,7 +19,6 @@ public class OperatorDatasetBuilder extends DatasetBuilder{
         Map<String, Double> filteredEvents =
                 events.stream()
                 .filter(event -> containsUser(event.getUsers(), userId))
-                .flatMap(this::splitEventsWithLongDuration)
                 .collect(Collectors.groupingBy(
                             event -> DATE_FORMATTER.format(event.getStart()),
                             Collectors.summingDouble(event -> dateHelper.getDateDiffInHours(event.getStart(), event.getEnd()))));

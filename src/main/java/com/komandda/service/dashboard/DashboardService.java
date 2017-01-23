@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -83,12 +84,36 @@ public class DashboardService {
     }
 
     private List<Event> getThisWeekEvents(List<Event> events) {
-        Date weekStart = dateHelper.getWeekBeginning(new Date());
+        Date weekStart = dateHelper.minusSeconds(dateHelper.getWeekBeginning(new Date()), 1);
         Date nextWeekStart = dateHelper.getNextWeekBeggining(new Date());
         return events.stream()
+                .flatMap(this::splitEventsWithLongDuration)
                 .filter(event -> dateHelper.isBefore(weekStart, event.getStart()))
                 .filter(event -> dateHelper.isBefore(event.getStart(), nextWeekStart))
                 .collect(Collectors.toList());
     }
 
+    private Stream<Event> splitEventsWithLongDuration(Event longDurationEvent) {
+        if(dateHelper.getDateDiffInHours(longDurationEvent.getStart(), longDurationEvent.getEnd()) <= 24){
+            return Collections.singletonList(longDurationEvent).stream();
+        }
+        List<Event> events = new ArrayList<>();
+        Date startDate = longDurationEvent.getStart();
+        Date endOfDay = dateHelper.getEndOfDay(longDurationEvent.getStart());
+        while(dateHelper.isBefore(endOfDay, longDurationEvent.getEnd())) {
+            Event event = new Event(longDurationEvent);
+            event.setStart(startDate);
+            event.setEnd(endOfDay);
+            events.add(event);
+            startDate = dateHelper.getStartOfNextDay(endOfDay);
+            endOfDay = dateHelper.getEndOfDay(startDate);
+        }
+        if(dateHelper.getDateDiffInHours(startDate, longDurationEvent.getEnd()) > 0) {
+            Event event = new Event(longDurationEvent);
+            event.setStart(startDate);
+            event.setEnd(longDurationEvent.getEnd());
+            events.add(event);
+        }
+        return events.stream();
+    }
 }

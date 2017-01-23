@@ -39,6 +39,11 @@ public class DateHelper {
         return asDate(shiftedLocalDateTime);
     }
 
+    public Date minusSeconds(Date date, int secondsAmount) {
+        LocalDateTime shiftedLocalDateTime = asLocalDateTime(date).minusSeconds(secondsAmount);
+        return asDate(shiftedLocalDateTime);
+    }
+
     public boolean isBefore(Date first, Date second) {
         return asLocalDateTime(first).isBefore(asLocalDateTime(second));
     }
