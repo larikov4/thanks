@@ -1,7 +1,13 @@
 package com.komandda.service.email.template.event;
 
 import com.komandda.entity.*;
+import com.komandda.service.email.pool.UpdatingEmailsPool;
 import com.komandda.service.email.template.EmailTemplate;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.springframework.util.StringUtils.isEmpty;
 
@@ -10,21 +16,38 @@ public class EventUpdatingEmailTemplate extends EmailTemplate {
 
     private static final String EMPTY_VALUE = "nothing";
     protected Event prevEvent;
+    private Set<User> authors;
 
-    public EventUpdatingEmailTemplate(Event event, User author, Event prevEvent) {
-        super(event, author);
+    public EventUpdatingEmailTemplate(Event event, Set<User> authors, Event prevEvent) {
+        super(event);
+        if(authors == null){
+            this.authors = Collections.emptySet();
+        } else {
+            this.authors = authors;
+        }
         this.prevEvent = prevEvent;
     }
 
     @Override
     public String resolveSubject() {
-        return SUBJECT_PREFIX + getEvent().getTitle() + " (updated by " + getAuthor().getName() + ")";
+        return SUBJECT_PREFIX + getEvent().getTitle() + " (updated by " + resolveChangeAuthors() + ")";
     }
 
     @Override
     public String resolveBody() {
-        return "Event was changed by " + getAuthor().getName() + LINE_SEPARATOR +
+        return "Event was changed by " + resolveChangeAuthors() + LINE_SEPARATOR +
                 generateDiffBetweenPreviousAndCurrentEvent();
+    }
+
+    protected String resolveChangeAuthors() {
+        List<String> authorNames = authors.stream()
+                .map(User::getName)
+                .collect(Collectors.toList());
+        StringBuilder sb = new StringBuilder();
+        for (String author : authorNames) {
+            sb.append(author).append(", ");
+        }
+        return sb.substring(0, sb.length() - 2);
     }
 
     private String generateDiffBetweenPreviousAndCurrentEvent() {

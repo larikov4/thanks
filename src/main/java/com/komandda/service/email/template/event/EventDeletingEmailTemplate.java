@@ -7,9 +7,11 @@ import com.komandda.service.email.template.EmailTemplate;
 
 
 public class EventDeletingEmailTemplate extends EmailTemplate {
+    private User author;
 
     public EventDeletingEmailTemplate(Event event, User author) {
-        super(event, author);
+        super(event);
+        this.author = author;
     }
 
     @Override
@@ -20,5 +22,9 @@ public class EventDeletingEmailTemplate extends EmailTemplate {
     @Override
     public String resolveBody() {
         return "Event with title \"" + getEvent().getTitle() + "\" was deleted by " + getAuthor().getName() + ".";
+    }
+
+    public User getAuthor() {
+        return author;
     }
 }

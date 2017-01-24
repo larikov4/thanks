@@ -18,11 +18,9 @@ public abstract class EmailTemplate {
     protected static final DateHelper DATE_HELPER = new DateHelper();
 
     private Event event;
-    private User author;
 
-    protected EmailTemplate(Event event, User author) {
+    protected EmailTemplate(Event event) {
         this.event = event;
-        this.author = author;
     }
 
     public abstract String resolveSubject();
@@ -31,10 +29,6 @@ public abstract class EmailTemplate {
 
     protected Event getEvent() {
         return event;
-    }
-
-    protected User getAuthor() {
-        return author;
     }
 
     protected String format(Date date) {

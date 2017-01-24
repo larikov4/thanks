@@ -2,7 +2,7 @@ package com.komandda.service;
 
 import com.komandda.entity.*;
 import com.komandda.repository.EventRepository;
-import com.komandda.service.email.facade.EventEmailSenderFacade;
+import com.komandda.service.email.service.EventEmailSenderService;
 import com.komandda.service.filter.EventFilterDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,7 +31,7 @@ public class EventService {
     private EventChangelogService changelog;
 
     @Autowired
-    private EventEmailSenderFacade emailSender;
+    private EventEmailSenderService emailSender;
 
 
     public List<Event> findAll() {

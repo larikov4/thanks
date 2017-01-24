@@ -6,8 +6,7 @@ import com.komandda.entity.Series;
 import com.komandda.entity.User;
 import com.komandda.entity.comparator.EventComparatorByDate;
 import com.komandda.repository.SeriesRepository;
-import com.komandda.service.email.facade.EventEmailSenderFacade;
-import com.komandda.service.email.facade.SeriesEventEmailSenderFacade;
+import com.komandda.service.email.service.SeriesEventEmailSenderService;
 import com.komandda.service.helper.DateHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,13 +36,14 @@ public class SeriesService {
     private DateHelper dateHelper;
 
     @Autowired
-    private SeriesEventEmailSenderFacade emailSender;
+    private SeriesEventEmailSenderService emailSender;
 
     public List<Series> findAll() {
         return seriesRepository.findAll();
     }
 
     public List<Event> insert(Event event, User author) {
+        setEmptyEquipmentListIfAbsent(event);
         Series series = new Series(event, dateHelper.plusWeeks(event.getStart(), WEEKS_AMOUNT_IN_SERIES));
         Series seriesWithId = seriesRepository.insert(series);
         event.setSeriesId(seriesWithId.getId());
@@ -51,6 +52,7 @@ public class SeriesService {
     }
 
     public List<Event> save(Event updatingEvent, User author) {
+        setEmptyEquipmentListIfAbsent(updatingEvent);
         Event prevEvent = eventService.findOne(updatingEvent.getId());
         emailSender.sendUpdatingEventEmail(updatingEvent, author, prevEvent);
         long startDateDiff = dateHelper.getDurationFromWeekBeginning(updatingEvent.getStart());
@@ -137,5 +139,11 @@ public class SeriesService {
     private User retrieveAuthorOfLastChange(String eventId) {
         List<EventChangeItem> diffs = eventChangelogService.findByDiffItemId(eventId);
         return diffs.get(diffs.size() - 1).getAuthor();
+    }
+
+    private void setEmptyEquipmentListIfAbsent(Event event) {
+        if(event.getEquipment() == null) {
+            event.setEquipment(Collections.emptyList());
+        }
     }
 }

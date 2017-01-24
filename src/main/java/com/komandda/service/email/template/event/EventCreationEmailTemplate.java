@@ -11,9 +11,11 @@ import static org.springframework.util.StringUtils.isEmpty;
 
 
 public class EventCreationEmailTemplate extends EmailTemplate {
+    private User author;
 
     public EventCreationEmailTemplate(Event event, User author) {
-        super(event, author);
+        super(event);
+        this.author = author;
     }
 
     @Override
@@ -34,6 +36,10 @@ public class EventCreationEmailTemplate extends EmailTemplate {
         appendUsers(emailBodyBuilder);
         appendEquipment(emailBodyBuilder);
         return emailBodyBuilder.toString();
+    }
+
+    public User getAuthor() {
+        return author;
     }
 
     protected StringBuilder appendIntroduction(StringBuilder emailBodyBuilder) {

@@ -4,16 +4,19 @@ import com.komandda.entity.Event;
 import com.komandda.entity.User;
 import com.komandda.service.email.template.event.EventUpdatingEmailTemplate;
 
+import java.util.List;
+import java.util.Set;
+
 
 public class SeriesEventUpdatingEmailTemplate extends EventUpdatingEmailTemplate {
 
-    public SeriesEventUpdatingEmailTemplate(Event event, User author, Event prevEvent) {
-        super(event, author, prevEvent);
+    public SeriesEventUpdatingEmailTemplate(Event event, Set<User> authors, Event prevEvent) {
+        super(event, authors, prevEvent);
     }
 
     @Override
     public String resolveBody() {
-        return "Series event was changed by " + getAuthor().getName() + "." + LINE_SEPARATOR +
+        return "Series event was changed by " + resolveChangeAuthors() + "." + LINE_SEPARATOR +
                 generateDiffBetweenPreviousAndCurrentEvent();
     }
 
