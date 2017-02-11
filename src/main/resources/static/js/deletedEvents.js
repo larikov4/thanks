@@ -8,7 +8,7 @@ $grid.jsGrid({
         item.author = item.author.name;
         item.title = item.diff.title;
         item.project = item.diff.project ? item.diff.project.name : "";
-        item.date = item.date.substring(0, item.date.length - 10).replace("T", " ");
+        item.date = item.date.substring(0, item.date.length - 8).replace("T", " ");
         return item;
     }),
     inserting: false,
