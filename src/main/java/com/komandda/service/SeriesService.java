@@ -5,9 +5,11 @@ import com.komandda.entity.EventChangeItem;
 import com.komandda.entity.Series;
 import com.komandda.entity.User;
 import com.komandda.entity.comparator.EventComparatorByDate;
+import com.komandda.exception.UsingBusyResourcesException;
 import com.komandda.repository.SeriesRepository;
 import com.komandda.service.email.service.SeriesEventEmailSenderService;
 import com.komandda.service.helper.DateHelper;
+import com.komandda.validator.FreeEntitiesValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -38,12 +40,18 @@ public class SeriesService {
     @Autowired
     private SeriesEventEmailSenderService emailSender;
 
+    @Autowired
+    private FreeEntitiesValidator validator;
+
     public List<Series> findAll() {
         return seriesRepository.findAll();
     }
 
     public List<Event> insert(Event event, User author) {
         setEmptyEquipmentListIfAbsent(event);
+        if(validator.isUsingBusyResources(event)) {
+            throw new UsingBusyResourcesException();
+        }
         Series series = new Series(event, dateHelper.plusWeeks(event.getStart(), WEEKS_AMOUNT_IN_SERIES));
         Series seriesWithId = seriesRepository.insert(series);
         event.setSeriesId(seriesWithId.getId());
@@ -53,6 +61,9 @@ public class SeriesService {
 
     public List<Event> save(Event updatingEvent, User author) {
         setEmptyEquipmentListIfAbsent(updatingEvent);
+        if(validator.isUsingBusyResources(updatingEvent)) {
+            throw new UsingBusyResourcesException();
+        }
         Event prevEvent = eventService.findOne(updatingEvent.getId());
         emailSender.sendUpdatingEventEmail(updatingEvent, author, prevEvent);
         long startDateDiff = dateHelper.getDurationFromWeekBeginning(updatingEvent.getStart());

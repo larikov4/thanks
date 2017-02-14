@@ -1013,7 +1013,12 @@ $(document).ready(function() {
 			}).success(function(data){
 			    $('.modal-edit').modal('hide');
 			}).fail(function(e){
-				toastr["error"]("Server error #5. Please refresh the page.");
+			    if(e.status === 409) {
+			        fillSelectsIfFieldsIsReady();
+			        $(".modal-edit .modal-body form").valid();
+			    } else {
+				    toastr["error"]("Server error #5. Please refresh the page.");
+			    }
 			});
 		} else {
 			event.author = currentEvent.author;
@@ -1032,6 +1037,9 @@ $(document).ready(function() {
                     toastr.remove();
                     $('.modal-edit').modal('hide');
                     toastr["warning"]("You don't have permission to edit this event.");
+                } else if(e.status === 409) {
+                    fillSelectsIfFieldsIsReady();
+                    $(".modal-edit .modal-body form").valid();
                 } else {
 				    toastr["error"]("Server error #6. Please refresh the page.");
                 }

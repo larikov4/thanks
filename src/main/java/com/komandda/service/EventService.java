@@ -1,9 +1,11 @@
 package com.komandda.service;
 
 import com.komandda.entity.*;
+import com.komandda.exception.UsingBusyResourcesException;
 import com.komandda.repository.EventRepository;
 import com.komandda.service.email.service.EventEmailSenderService;
 import com.komandda.service.filter.EventFilterDto;
+import com.komandda.validator.FreeEntitiesValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +35,8 @@ public class EventService {
     @Autowired
     private EventEmailSenderService emailSender;
 
+    @Autowired
+    private FreeEntitiesValidator validator;
 
     public List<Event> findAll() {
         return hidePassword(repository.findAll());
@@ -44,6 +48,9 @@ public class EventService {
 
     public Event insert(Event event, User author) {
         setEmptyEquipmentListIfAbsent(event);
+        if(validator.isUsingBusyResources(event)) {
+            throw new UsingBusyResourcesException();
+        }
         if(event.getSeriesId()==null){
             emailSender.sendCreationEventEmail(event, author);
         }
@@ -59,11 +66,14 @@ public class EventService {
     }
 
     public Event save(Event event, User author) {
+        setEmptyEquipmentListIfAbsent(event);
+        if(validator.isUsingBusyResources(event)) {
+            throw new UsingBusyResourcesException();
+        }
         Event prevEvent = repository.findOne(event.getId());
         if(event.getSeriesId()==null) {
             emailSender.sendUpdatingEventEmail(event, author, prevEvent);
         }
-        setEmptyEquipmentListIfAbsent(event);
         Event savedEvent = repository.save(event);
 
         hidePassword(savedEvent);
