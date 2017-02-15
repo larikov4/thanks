@@ -761,7 +761,7 @@ a.fc-event .fc-content {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 3px 8px;
+    padding: 3px 7px;
     font-size:12px;
 }
 
@@ -892,7 +892,7 @@ label.error {
 }
 .fc-event-username {
     margin: 0;
-    text-align: center;
+    text-align: left;
     padding: 2px 3px 2px 7px;
     font-size:11px;
     text-overflow: clip;
@@ -1000,7 +1000,7 @@ select.ui-datepicker-year {
     right:0;
     font-size:11px;
     letter-spacing: 1px;
-    padding-left:9px;
+    padding-left:7px;
 }
 
 .fc-event .fc-event-username {
