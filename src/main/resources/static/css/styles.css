@@ -235,12 +235,24 @@ a .fa-lg {
 }
 
 /*main*/
-.calendar-main, .entity-main {
+.calendar-main {
   margin-left: 200px;
+  margin-right: 422px;
   padding: 20px 50px 0 50px;
 }
+
+.entity-main {
+  margin-left: 200px;
+  margin-right: 0;
+  padding: 20px 12px 0 50px;
+}
+
 .calendar-main.hidden-sidebar, .entity-main.hidden-sidebar {
   margin-left: 0;
+}
+
+.calendar-main.hidden-filter-sidebar {
+    margin-right:0;
 }
 
 .select2-result-label {

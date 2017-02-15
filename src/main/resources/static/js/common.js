@@ -36,6 +36,7 @@ var COLORS = [
             $parent = $this.parent();
         $parent.toggleClass('hidden-sidebar');
         $this.toggleClass('active');
+        $('main').toggleClass('hidden-filter-sidebar');
     });
 })(jQuery);
 
