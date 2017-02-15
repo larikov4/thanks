@@ -447,7 +447,9 @@ $(document).ready(function() {
 		if(currentEvent) {
 	        toggleRecordingCheckbox(currentEvent.location);
 		}
+		var prevProject = $('#project').val();
 		fillSelect($('#project'), filterDeletedByName(Object.keys(repo.projects)));
+		$('#project').select2('val', prevProject);
 	    var data = {
             start:$('#start-date').val() + "T" + $('#start-time').val(),
             end:$('#end-date').val() + "T" + $('#end-time').val()
@@ -465,8 +467,7 @@ $(document).ready(function() {
 				prepareSelect(data, 'name', Object.keys(repo.locations), 'location', additionalValues);
 				if(prev){
 					$select.select2('val', prev);
-				}
-				if(currentEvent && currentEvent.location){
+				} else if(currentEvent && currentEvent.location){
 					$select.select2('val', currentEvent.location.name);
 				}
 				if(wasModalSubmitted && ajaxCounter % 3 === 0){
@@ -498,8 +499,7 @@ $(document).ready(function() {
                     prepareSelect(splitEquipment(equipmentContainer)[type], 'name', Object.keys(repo[type]), type, additionalValues);
                     if(prev){
                         $select.select2('val', prev);
-                    }
-                    if(currentEvent) {
+                    } else if(currentEvent) {
                         $select.select2('val', mapNames(currentEvent[type]));
                     }
 				}
@@ -525,8 +525,7 @@ $(document).ready(function() {
 				prepareSelect(data, 'name', Object.keys(repo.userIds), 'user', additionalValues);
 				if(prev){
 					$select.select2('val', prev);
-				}
-				if(currentEvent) {
+				} else if(currentEvent) {
 					$select.select2('val', currentEvent.users.map(function (user) {
 						return user.name
 					}));
