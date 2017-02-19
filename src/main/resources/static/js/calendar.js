@@ -594,6 +594,34 @@ $(document).ready(function() {
 		});
 	}
 
+    (function generateOperatorFilter(){
+        var onlineUsers = [];
+        var $container = $('#operator-container')
+        var $bubble = $('<div>').addClass('operator-bubble');
+
+        for(var i=0;i<Object.keys(repo.users).length;i++) {
+            var username = Object.keys(repo.users)[i];
+            var user = repo.users[username];
+            if(user.operator) {
+                $container.append($bubble.clone().text(user.name));
+            }
+        }
+
+        $('.operator-bubble').on('click', function() {
+            var values = $('#filter-user').select2("val");
+            var currentUser = $(this).text();
+            if(!values.contains(currentUser)) {
+                values.push($(this).text());
+            } else {
+                var index = values.indexOf($(this).text());
+                values.splice(index, 1);
+            }
+            $(this).toggleClass('selected');
+            $('#filter-user').select2("val", values);
+            $('#filter-user').trigger('change');
+        });
+    })();
+
     function generateCustomButtons(){
         var buttons = {};
         buttons.weekdays = {
@@ -629,7 +657,7 @@ $(document).ready(function() {
     }
 
     function adaptCalendarHeight() {
-        var height = Math.min(getActualHeight() - 73, 1485);
+        var height = Math.min(getActualHeight() - 77, 1485);
         $('#calendar').fullCalendar('option', 'height', height);
 
         function getActualHeight() {

@@ -1019,13 +1019,22 @@ select.ui-datepicker-year {
     letter-spacing: 1px;
 }
 
-.online-bubble {
+.operator-bubble {
     display: inline-block;
     background-color:#16A085;
     padding-left: 7px;
     padding-right: 7px;
-    margin-right: 13px;
+    margin-right: 11px;
     margin-bottom: 11px;
+    cursor:pointer;
+    box-sizing: border-box;
+    border: 2px solid #FFF;
+    transition-property: none;
+}
+
+.operator-bubble.selected {
+    border: 2px solid #34495e;
+    box-sizing: border-box;
 }
 
 .calendar-main {
@@ -1037,7 +1046,7 @@ select.ui-datepicker-year {
     padding-right: 50px;
 }
 
-#online-container {
+#operator-container {
     padding-left: 11px;
 }
 
