@@ -7,6 +7,10 @@ var PERMISSIONS = [
     {name:'observer'}
 ];
 
+jsGrid.sortStrategies.priority = function(entity1, entity2) {
+    return entity2.priority - entity1.priority;
+};
+
 USERS = USERS.map(function(user){
     user.birthday = user.birthday ? moment(user.birthday).format('YYYY-MM-DD') : user.birthday;
     return user;
@@ -155,11 +159,44 @@ $grid.jsGrid({
             });
         }
     },
+    rowClass: function(item, itemIndex) {
+        return "row-" + (itemIndex);
+    },
+    onRefreshed: !IS_EDITABLE ? function(){} : function() {
+        var $gridData = $("#jsGrid .jsgrid-grid-body tbody");
+
+        $gridData.sortable({
+            update: function(e, ui) {
+                // arrays of items
+                var items = $.map($gridData.find("tr"), function(row) {
+                    return $(row).data("JSGridItem");
+                });
+                var newPriority = items.indexOf((ui.item).data("JSGridItem"))
+                var oldPriority = (ui.item).data("JSGridItem").priority;
+                console.log("old: " + oldPriority + " - new: " + newPriority);
+
+                $.ajax({
+                    type: "PUT",
+                    url: REST_URL + "/priority",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        oldPriority: oldPriority,
+                        newPriority: newPriority
+                    })
+                }).success(function(){
+                    $grid.jsGrid("loadData");
+                }).fail(function(e){
+                    toastr["error"]("Server error #13. Please refresh the page.");
+                });
+            },
+            placeholder: "highlight-row"
+        });
+    },
     inserting: IS_EDITABLE,
     editing: IS_EDITABLE,
     sorting: false,
     fields: [
-        { title: "Username", name: "username", type: "text", width: 40, validate: "required" },
+        { title: "Username", name: "username", type: "text", width: 40, validate: "required", sorter: "priority" },
         { title: "Password", name: "password", type: "text", width: 30, validate: "required" },
         { title: "Name", name: "name", type: "text", width: 30 },
         { title: "Phone", name: "phone", type: "text", width: 30 },

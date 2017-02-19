@@ -8,7 +8,7 @@ import java.util.Date;
 /**
  * @author Yevhen_Larikov
  */
-public class Equipment {
+public class Equipment implements Prioritable {
 
     @Id
     private String id;
@@ -18,6 +18,8 @@ public class Equipment {
     private EquipmentType type;
 
     private boolean deleted;
+
+    private int priority;
 
     public String getId() {
         return id;
@@ -49,6 +51,14 @@ public class Equipment {
 
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
     }
 
     @Override

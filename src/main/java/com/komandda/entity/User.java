@@ -16,7 +16,7 @@ import java.util.List;
  * @author Yevhen_Larikov
  */
 @JsonAutoDetect
-public class User implements UserDetails, Comparable<User> {
+public class User implements UserDetails, Comparable<User>, Prioritable {
 
     @Id
     private String id;
@@ -40,6 +40,8 @@ public class User implements UserDetails, Comparable<User> {
     private boolean deleted;
 
     private boolean operator;
+
+    private int priority;
 
     /* Spring Security related fields*/
     private List<Permission> authorities;
@@ -119,6 +121,14 @@ public class User implements UserDetails, Comparable<User> {
 
     public void setOperator(boolean operator) {
         this.operator = operator;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
     }
 
     @Override

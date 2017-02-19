@@ -10,5 +10,7 @@ public interface UserRepository extends MongoRepository<User, String> {
 
 	User findByUsernameAndPassword(@Param("username") String username, @Param("password") String password);
 
-	List<User> findByDeletedFalse();
+	List<User> findAllByOrderByPriority();
+
+	List<User> findByDeletedFalseOrderByPriorityAsc();
 }

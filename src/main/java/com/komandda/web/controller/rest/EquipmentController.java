@@ -1,5 +1,6 @@
 package com.komandda.web.controller.rest;
 
+import com.komandda.web.controller.rest.bean.ChangePriorityBean;
 import com.komandda.entity.Equipment;
 import com.komandda.service.EquipmentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,12 @@ public class EquipmentController {
     @RequestMapping(method = RequestMethod.PUT)
     public Equipment update(@RequestBody Equipment equipment) {
         return service.save(equipment);
+    }
+
+    @PreAuthorize("hasAuthority('equipment_edit')")
+    @RequestMapping(value = "/{priority}", method = RequestMethod.PUT)
+    public List<Equipment> updatePriority(@RequestBody ChangePriorityBean priorityBean) {
+        return service.changePriority(priorityBean);
     }
 
     @PreAuthorize("hasAuthority('equipment_edit')")

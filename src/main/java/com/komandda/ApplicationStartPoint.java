@@ -16,8 +16,8 @@
 
 package com.komandda;
 
-import com.komandda.entity.Permission;
-import com.komandda.entity.User;
+import com.komandda.entity.*;
+import com.komandda.entity.comparator.PriorityComparator;
 import com.komandda.repository.EquipmentRepository;
 import com.komandda.repository.EventRepository;
 import com.komandda.repository.LocationRepository;
@@ -35,8 +35,9 @@ import org.springframework.util.StringUtils;
 import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Function;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
 
 @SpringBootApplication
 @EnableAsync
@@ -68,6 +69,74 @@ public class ApplicationStartPoint {
 		setNameIfAbsent();
 		convertPermissions();
 		removeEquipmentDuplicates();
+		initDefaultLocationsPriority();
+		initDefaultEquipmentPriority();
+		initDefaultUsersPriority();
+		System.out.println("started");
+	}
+
+	private void initDefaultLocationsPriority() {
+		Map<Location, Long> locations = eventRepository.findAll().stream()
+				.filter(event -> Objects.nonNull(event.getLocation()))
+				.map(Event::getLocation)
+				.collect(groupingBy(Function.identity(), counting()));
+		locationRepository.findAll().forEach(location -> locations.putIfAbsent(location, 0L));
+		ArrayList<Long> hitList = new ArrayList<>(locations.values());
+		Collections.sort(hitList, Collections.reverseOrder());
+
+		ArrayList<Location> priorityList = new ArrayList<>();
+		locations.entrySet().forEach(locationLongEntry -> {
+			Long hitAmount = locationLongEntry.getValue();
+			int index = hitList.indexOf(hitAmount);
+			hitList.set(index, -1L);
+			Location location = locationLongEntry.getKey();
+			location.setPriority(index);
+			priorityList.add(location);
+		});
+
+		locationRepository.save(priorityList);
+	}
+
+	private void initDefaultEquipmentPriority() {
+		Map<Equipment, Long> equipmentContainer = eventRepository.findAll().stream()
+				.flatMap(event -> event.getEquipment().stream())
+				.collect(groupingBy(Function.identity(), counting()));
+		equipmentRepository.findAll().forEach(item -> equipmentContainer.putIfAbsent(item, 0L));
+		ArrayList<Long> hitList = new ArrayList<>(equipmentContainer.values());
+		Collections.sort(hitList, Collections.reverseOrder());
+
+		ArrayList<Equipment> priorityList = new ArrayList<>();
+		equipmentContainer.entrySet().forEach(equipmentLongEntry -> {
+			Long hitAmount = equipmentLongEntry.getValue();
+			int index = hitList.indexOf(hitAmount);
+			hitList.set(index, -1L);
+			Equipment currentEquipment = equipmentLongEntry.getKey();
+			currentEquipment.setPriority(index);
+			priorityList.add(currentEquipment);
+		});
+
+		equipmentRepository.save(priorityList);
+	}
+
+	private void initDefaultUsersPriority() {
+		Map<User, Long> users = eventRepository.findAll().stream()
+				.flatMap(event -> event.getUsers().stream())
+				.collect(groupingBy(Function.identity(), counting()));
+		userRepository.findAll().forEach(user -> users.putIfAbsent(user, 0L));
+		ArrayList<Long> hitList = new ArrayList<>(users.values());
+		Collections.sort(hitList, Collections.reverseOrder());
+
+		ArrayList<User> priorityList = new ArrayList<>();
+		users.entrySet().forEach(userLongEntry -> {
+			Long hitAmount = userLongEntry.getValue();
+			int index = hitList.indexOf(hitAmount);
+			hitList.set(index, -1L);
+			User user = userLongEntry.getKey();
+			user.setPriority(index);
+			priorityList.add(user);
+		});
+
+		userRepository.save(priorityList);
 	}
 
 	private void removeEquipmentDuplicates() {

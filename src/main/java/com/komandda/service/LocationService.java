@@ -1,7 +1,9 @@
 package com.komandda.service;
 
+import com.komandda.web.controller.rest.bean.ChangePriorityBean;
 import com.komandda.entity.Location;
 import com.komandda.repository.LocationRepository;
+import com.komandda.util.ListUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,11 +26,11 @@ public class LocationService {
     private FreeSeriesEntitiesService freeSeriesEntitiesService;
 
     public List<Location> findAll() {
-        return repository.findAll();
+        return repository.findAllByOrderByPriority();
     }
 
     public List<Location> findByDeletedFalse() {
-        return repository.findByDeletedFalse();
+        return repository.findByDeletedFalseOrderByPriorityAsc();
     }
 
     public Location findOne(String id) {
@@ -54,5 +56,15 @@ public class LocationService {
 
     public List<Location> getSeriesFree(Date start, Date end, String seriesId){
         return freeSeriesEntitiesService.getFreeLocations(start, end, seriesId);
+    }
+
+    public List<Location> changePriority(ChangePriorityBean priorityBean) {
+        List<Location> locations = repository.findAllByOrderByPriority();
+        ListUtil.moveElement(locations, priorityBean.getOldPriority(), priorityBean.getNewPriority());
+        for(int i=0;i<locations.size();i++) {
+            locations.get(i).setPriority(i);
+        }
+        repository.save(locations);
+        return locations;
     }
 }

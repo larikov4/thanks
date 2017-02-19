@@ -1,5 +1,6 @@
 package com.komandda.web.controller.rest;
 
+import com.komandda.web.controller.rest.bean.ChangePriorityBean;
 import com.komandda.entity.User;
 import com.komandda.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,12 @@ public class UsersController {
     @RequestMapping(method = RequestMethod.PUT)
     public User update(@RequestBody User user) {
         return service.save(user);
+    }
+
+    @PreAuthorize("hasAuthority('user_edit')")
+    @RequestMapping(value = "/{priority}", method = RequestMethod.PUT)
+    public List<User> updatePriority(@RequestBody ChangePriorityBean priorityBean) {
+        return service.changePriority(priorityBean);
     }
 
     @PreAuthorize("hasAuthority('user_edit')")

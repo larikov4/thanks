@@ -1,7 +1,9 @@
 package com.komandda.service;
 
+import com.komandda.web.controller.rest.bean.ChangePriorityBean;
 import com.komandda.entity.User;
 import com.komandda.repository.UserRepository;
+import com.komandda.util.ListUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,11 +26,11 @@ public class UserService {
     private FreeSeriesEntitiesService freeSeriesEntitiesService;
 
     public List<User> findAll() {
-        return hidePassword(repository.findAll());
+        return hidePassword(repository.findAllByOrderByPriority());
     }
 
     public List<User> findByDeletedFalse() {
-        return hidePassword(repository.findByDeletedFalse());
+        return hidePassword(repository.findByDeletedFalseOrderByPriorityAsc());
     }
 
     public User findOne(String id) {
@@ -74,5 +76,15 @@ public class UserService {
         String starsInsteadOfPassword = user.getPassword().replaceAll(".", "*");
         user.setPassword(starsInsteadOfPassword);
         return user;
+    }
+
+    public List<User> changePriority(ChangePriorityBean priorityBean) {
+        List<User> users = repository.findAllByOrderByPriority();
+        ListUtil.moveElement(users, priorityBean.getOldPriority(), priorityBean.getNewPriority());
+        for(int i=0;i<users.size();i++) {
+            users.get(i).setPriority(i);
+        }
+        repository.save(users);
+        return users;
     }
 }

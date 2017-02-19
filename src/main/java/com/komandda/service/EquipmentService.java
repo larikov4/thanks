@@ -1,7 +1,9 @@
 package com.komandda.service;
 
+import com.komandda.web.controller.rest.bean.ChangePriorityBean;
 import com.komandda.entity.Equipment;
 import com.komandda.repository.EquipmentRepository;
+import com.komandda.util.ListUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,11 +26,11 @@ public class EquipmentService {
     private FreeSeriesEntitiesService freeSeriesEntitiesService;
 
     public List<Equipment> findAll() {
-        return repository.findAll();
+        return repository.findAllByOrderByPriority();
     }
 
     public List<Equipment> findByDeletedFalse() {
-        return repository.findByDeletedFalse();
+        return repository.findByDeletedFalseOrderByPriorityAsc();
     }
 
     public Equipment findOne(String id) {
@@ -54,5 +56,15 @@ public class EquipmentService {
 
     public List<Equipment> getSeriesFree(Date start, Date end, String seriesId){
         return freeSeriesEntitiesService.getFreeEquipment(start, end, seriesId);
+    }
+
+    public List<Equipment> changePriority(ChangePriorityBean priorityBean) {
+        List<Equipment> equipment = repository.findAllByOrderByPriority();
+        ListUtil.moveElement(equipment, priorityBean.getOldPriority(), priorityBean.getNewPriority());
+        for(int i=0;i<equipment.size();i++) {
+            equipment.get(i).setPriority(i);
+        }
+        repository.save(equipment);
+        return equipment;
     }
 }

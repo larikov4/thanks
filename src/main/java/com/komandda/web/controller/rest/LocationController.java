@@ -1,5 +1,6 @@
 package com.komandda.web.controller.rest;
 
+import com.komandda.web.controller.rest.bean.ChangePriorityBean;
 import com.komandda.entity.Location;
 import com.komandda.service.LocationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,12 @@ public class LocationController {
     @RequestMapping(method = RequestMethod.PUT)
     public Location update(@RequestBody Location location) {
         return service.save(location);
+    }
+
+    @PreAuthorize("hasAuthority('location_edit')")
+    @RequestMapping(value = "/{priority}", method = RequestMethod.PUT)
+    public List<Location> updatePriority(@RequestBody ChangePriorityBean priorityBean) {
+        return service.changePriority(priorityBean);
     }
 
     @PreAuthorize("hasAuthority('location_edit')")
