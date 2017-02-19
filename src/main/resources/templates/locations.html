@@ -28,7 +28,7 @@
 							<span class="nav-text">Calendar</span>
 						</a>
 					</li>
-					<li class="nav-item">
+					<li class="nav-item" sec:authorize="hasAnyAuthority('event_edit')">
 						<a class="nav-link" href="dashboard">
 							<span class="fa fa-bar-chart fa-lg nav-icon"></span>
 							<span class="nav-text">Dashboard</span>

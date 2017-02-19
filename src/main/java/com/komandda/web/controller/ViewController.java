@@ -3,6 +3,7 @@ package com.komandda.web.controller;
 import com.komandda.service.*;
 import com.komandda.service.dashboard.DashboardService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -77,6 +78,7 @@ public class ViewController {
         return "deletedEvents";
     }
 
+    @PreAuthorize("hasAuthority('event_edit')")
     @RequestMapping("/dashboard")
     public String dashboard(Model model) {
         model.addAttribute("users", userService.findByDeletedFalse());
