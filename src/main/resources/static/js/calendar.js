@@ -802,6 +802,7 @@ $(document).ready(function() {
         selectHelper: IS_EDITABLE,
 		select: function(start, end) {
             if(isDurationMoreThanOrEqualsOneHourByDates(start.toDate(), end.toDate())){
+                currentEvent = null;
                 var $modal = $('.modal-edit');
                 $modal.find('#start-date').val(start.format('YYYY-MM-DD'));
                 $modal.find('#end-date').val(end.format('YYYY-MM-DD'));
@@ -820,6 +821,10 @@ $(document).ready(function() {
                 event.title += " - " + event.end.hours() + ":";
                 event.title += event.end.minutes() === 0 ? "00" : event.end.minutes();
                 $target.find('.fc-content').append($('<div>').addClass('fc-title').text(event.title));
+		    }
+		    if(event.isPrivate && currentUser.name !== event.author.name && !IS_ADMIN) {
+		        event.title = 'Занят'
+		        $target.find('div.fc-title').text(event.title);
 		    }
 		    if(new Date(event.end).getTime() < getCurrentTime()){
 		        $target.addClass('past-event');
@@ -855,7 +860,7 @@ $(document).ready(function() {
                         $container.append($element.clone().text(event[type][i].name + ""));
                     }
 				}
-				if($container.children().length === 0 && !event.isBirthday) {
+				if($container.children().length === 0 && !event.isBirthday && !event.isPrivate) {
 				   var $recordingContainer = $('<div>').addClass('recording-container');
 				   var $recordingShadow = $('<div>').addClass('recording-shadow');
 				   var $recordingText = $('<span>').text('монтаж');
@@ -928,7 +933,7 @@ $(document).ready(function() {
 
 						function fillPopover(event) {
 							var $popover = $('#popover-container');
-							if(!hasEquipment(event)) {
+							if(!hasEquipment(event) && !event.isPrivate) {
 							    $popover.find('.video-editing').show();
 							}
 							function hasEquipment(event) {
@@ -1027,11 +1032,19 @@ $(document).ready(function() {
 		currentEvent = event;
 	}
 
+    function handlePrivateEvent(event) {
+        if(!event.users || !event.users.length) {
+            event.users = [event.author];
+            event.isPrivate = true;
+        }
+    }
+
 	function onSubmit(){
         var event = fetchEventFromForm();
         var url = event.isSeries ? SERIES_REST_URL : EVENT_REST_URL;
 		if(!currentEvent){
 			event.author = currentUser;
+            handlePrivateEvent(event);
 			$.ajax({
 				type: "POST",
 				url: url,
@@ -1052,6 +1065,8 @@ $(document).ready(function() {
 			event.created = currentEvent.created;
 			event.id = currentEvent.id;
 			event.seriesId = currentEvent.seriesId;
+			event.isPrivate = currentEvent.isPrivate;
+			handlePrivateEvent(event);
 			$.ajax({
 				type: "PUT",
 				url: url,
@@ -1424,7 +1439,6 @@ $(document).ready(function() {
                 isFreeLocation:true
             },
 			user: {
-                required:true,
                 isFreeUser:true
             },
 			camera: {
@@ -1622,34 +1636,6 @@ $(document).ready(function() {
                    .filter(function(item){return mapIds(event.equipment).contains(item)})
                    .length != 0)
                 || currentFilter.projects.contains(event.project.id);
-        }
-    })();
-
-    (function online(){
-        sendRequest();
-        setInterval(sendRequest, 4500)
-
-        var onlineUsers = [];
-        var $container = $('#online-container')
-        var $bubble = $('<div>').addClass('online-bubble');
-        function sendRequest(){
-            $.ajax({
-                type: "GET",
-                url: "/rest/online",
-                contentType: "application/json",
-            }).success(function(data){
-                var usersToRemove = onlineUsers.filter(function(item){return !data.contains(item)});
-                var usersToAdd = data.filter(function(item){return !onlineUsers.contains(item)});
-                usersToRemove.forEach(function(element){
-                    var index = onlineUsers.indexOf(element);
-                    onlineUsers.splice(index, 1);
-                    $container.find('.' + element).fadeOut(300, function() { $(this).remove(); });
-                });
-                usersToAdd.forEach(function(element){
-                    onlineUsers.push(element);
-                    $bubble.clone().addClass(element).text(element).hide().appendTo($container).fadeIn(300);//TODO element should be unique
-                });
-            })
         }
     })();
 });

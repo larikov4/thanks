@@ -47,6 +47,8 @@ public class Event {
 
     private Date created;
 
+    private boolean isPrivate;
+
     public Event() {
     }
 
@@ -165,6 +167,14 @@ public class Event {
 
     public void setCreated(Date created) {
         this.created = created;
+    }
+
+    public boolean getIsPrivate() {
+        return isPrivate;
+    }
+
+    public void setIsPrivate(boolean aPrivate) {
+        isPrivate = aPrivate;
     }
 
     @Override

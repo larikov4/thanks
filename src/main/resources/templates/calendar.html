@@ -316,6 +316,7 @@
 			var PROJECTS = /*[[${projects}]]*/ null;
 			var EVENTS = /*[[${events}]]*/ null;
 			var IS_EDITABLE = /*[[ ${#authorization.expression("hasAnyAuthority('event_edit', 'self_event_edit')")} ]]*/ null;
+			var IS_ADMIN = /*[[ ${#authorization.expression("hasAnyAuthority('event_edit')")} ]]*/ null;
 			var CURRENT_USERNAME = /*[[ ${#authentication.name} ]]*/ null;
 		</script>
 

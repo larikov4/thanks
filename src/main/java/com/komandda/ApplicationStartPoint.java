@@ -65,13 +65,6 @@ public class ApplicationStartPoint {
 	@PostConstruct
 	void init() {
         generateDefaultUserIfAnyAbsent();
-        setDeletedToFalse();
-		setNameIfAbsent();
-		convertPermissions();
-		removeEquipmentDuplicates();
-		initDefaultLocationsPriority();
-		initDefaultEquipmentPriority();
-		initDefaultUsersPriority();
 		System.out.println("started");
 	}
 
