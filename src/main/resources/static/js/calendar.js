@@ -1033,9 +1033,6 @@ $(document).ready(function() {
 							if(event.location) {
 							    $popover.find('.location-container').show();
 							    $popover.find('.location').text(event.location.name);
-							    showFormRightPart();
-							} else {
-							    hideFormRightPart();
 							}
 							var $li = $('<li>');
 							var usersContainer = $popover.find('.users');
@@ -1064,6 +1061,11 @@ $(document).ready(function() {
                                     $modal.find('#end-time').select2('val', event.end.hour() + ":" + padZero(event.end.minute()));
                                     $modal.find("#series").prop('checked', isSeries);
                                     $modal.find("#series").prop( "disabled", true );
+                                    if(currentEvent.location) {
+                                        showFormRightPart();
+                                    } else {
+                                        hideFormRightPart();
+                                    }
                                     fillSelects(isSeries);
                                     if(event.project) {
                                         $modal.find("#project").val(event.project.name).trigger('change');
