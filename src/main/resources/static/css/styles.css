@@ -1065,3 +1065,7 @@ select.ui-datepicker-year {
     width: 400px;
     height: 400px;
 }
+
+.fc-day-header {
+    cursor:pointer;
+}

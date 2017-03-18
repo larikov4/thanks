@@ -28,6 +28,7 @@ $(document).ready(function() {
 	var SERIES_REST_URL = "/rest/series";
 	var DEFAULT_EVENT_COLOR = '#BDC3C7';
 	var wasModalSubmitted = false;
+	var columnConfig = null;
 
     function mapEquipmentType(equipment) {
         return equipment.map(function(item){
@@ -741,11 +742,39 @@ $(document).ready(function() {
                 }
             })();
 
-	 	    if(view.type.contains('agenda')) {
-                setColsWidth();
-	 	    }
+            (function adjustColumnWidth() {
+                if(view.type.contains('agenda')) {
+                    if(!columnConfig) {
+                        setDefaultColsWidth();
+                    } else if(!columnConfig.passedStubRender){
+                        columnConfig.passedStubRender = true;
+                    } else {
+                        setColsWidth(columnConfig);
+                        columnConfig = null;
+                    }
+                }
 
-            function setColsWidth() {
+                $('.fc-day-header').on('click', function() {
+                    console.log($(this));
+                    columnConfig = {
+                        amount: $('.fc-day-header').length,
+                        currentIndex: $('.fc-day-header').index($(this))
+                    };
+                    refreshView();
+
+                    function refreshView() {
+                        var viewType = $('#calendar').fullCalendar('getView').name;
+                        $('#calendar').fullCalendar( 'changeView', getStubViewName(viewType));
+                        $('#calendar').fullCalendar( 'changeView', viewType);
+                    }
+
+                    function getStubViewName(currentViewType) {
+                        return currentViewType === 'agendaWeek' ? 'agendaWeekdays' : 'agendaWeek';
+                    }
+                });
+            })();
+
+            function setDefaultColsWidth() {
                 var tableHeaders = $('.fc-head-container th');
                 var tableCols = $('.fc-bg td');
                 var eventCols = $('.fc-content-skeleton td');
@@ -753,7 +782,7 @@ $(document).ready(function() {
                 var narrowDaysAmount = 0;
                 tableCols.each(function(i, v){
                     var $v = $(v);
-                    if($v.hasClass('fc-past') || $v.hasClass('fc-sat') || $v.hasClass('fc-sun')){
+                    if(!$v.hasClass('fc-today') && ($v.hasClass('fc-past') || $v.hasClass('fc-sat') || $v.hasClass('fc-sun'))){
                         narrowDaysAmount++;
                     }
                 })
@@ -777,6 +806,47 @@ $(document).ready(function() {
                     } else if(tableCols.eq(i).hasClass('fc-future')){
                         setColWidth(currentCols, wideColWidth);
                     }
+                }
+            }
+
+            function setColsWidth(config) {
+                var tableHeaders = $('.fc-head-container th');
+                var tableCols = $('.fc-bg td');
+                var eventCols = $('.fc-content-skeleton td');
+
+                var narrowDaysAmount = config.currentIndex;
+                if(hasWeekend(config.amount)) {
+                    narrowDaysAmount += config.amount - config.currentIndex - 1;
+                }
+                var totalWidth = 100;
+                var wideDaysAmount = config.amount - narrowDaysAmount;
+                var standardColWidth = totalWidth / (wideDaysAmount + narrowDaysAmount);
+                var narrowColWidth = standardColWidth;
+                if(wideDaysAmount > 1){
+                    narrowColWidth *= 0.5;
+                }
+                else {
+                    narrowColWidth *= 0.65;
+                }
+                var wideColWidth = (totalWidth - narrowDaysAmount * narrowColWidth) / (wideDaysAmount + 1);
+                config.currentIndex++;
+                for(var i=tableCols.length - 1; i >= 1 ; i--) {
+                    var currentCols = [tableHeaders.eq(i), tableCols.eq(i), eventCols.eq(i)];
+                    if(i === config.currentIndex){
+                        setColWidth(currentCols, wideColWidth * 2);
+                    } else if(isWeekend(i-1) || i < config.currentIndex) {
+                        setColWidth(currentCols, narrowColWidth);
+                    } else if(i > config.currentIndex){
+                        setColWidth(currentCols, wideColWidth);
+                    }
+                }
+
+                function hasWeekend(amount) {
+                    return amount > 5;
+                }
+
+                function isWeekend(index) {
+                    return index > 4;
                 }
             }
 
