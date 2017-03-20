@@ -277,6 +277,7 @@ $(document).ready(function() {
         data.start = $container.find('#start-date').val() + "T" + $('#start-time').val();
         data.end = $container.find('#end-date').val() + "T" + $container.find('#end-time').val();
         data.isSeries = $("#series").prop('checked');
+        data.isPrivate = $("#private").prop('checked');
         fetchProjectField($container, data);
         fetchUser($container, data);
         if($("#recording").prop('checked')) {
@@ -892,7 +893,7 @@ $(document).ready(function() {
                 event.title += event.end.minutes() === 0 ? "00" : event.end.minutes();
                 $target.find('.fc-content').append($('<div>').addClass('fc-title').text(event.title));
 		    }
-		    if(event.isPrivate && currentUser.name !== event.author.name && !IS_ADMIN) {
+		    if(event.isPrivate && !containsUserName(event, currentUser.name) && !IS_ADMIN) {
 		        event.title = 'Занят'
 		        $target.find('div.fc-title').text(event.title);
 		    }
@@ -930,13 +931,11 @@ $(document).ready(function() {
                         $container.append($element.clone().text(event[type][i].name + ""));
                     }
 				}
-				if($container.children().length === 0 && !event.isBirthday && !event.isPrivate) {
-				   var $recordingContainer = $('<div>').addClass('recording-container');
-				   var $recordingShadow = $('<div>').addClass('recording-shadow');
-				   var $recordingText = $('<span>').text('монтаж');
-				   $recordingContainer.append($recordingShadow);
-				   $recordingContainer.append($recordingText);
-				   $target.append($recordingContainer);
+				if(!event.location && !event.isBirthday && !event.isPrivate) {
+				   addLabel($target, 'монтаж')
+				}
+				if(event.isPrivate) {
+				   addLabel($target, 'конфиденциально')
 				}
 				$target.append($container);
                 if(event.users){
@@ -952,12 +951,31 @@ $(document).ready(function() {
                 }
 				$target.append(gridHolder);
 			}
+
+            function containsUserName(event, name) {
+                return event.users
+                    .filter(function(user){return user.name === name})
+                    .length != 0;
+            }
+
+            function addLabel($container, label) {
+                var $eventLabel = $('<div>').addClass('fc-event-label');
+                var $shadow = $('<div>').addClass('fc-event-label-shadow');
+                var $recordingText = $('<span>').text(label);
+                $eventLabel.append($shadow);
+                $eventLabel.append($recordingText);
+                $container.append($eventLabel);
+            }
 		},
 		eventAfterRender: function (event, $target){
 	 		$target.addClass('popover-target');
 			var $container = $('.equipment-container').each(function(){
 				$container = $(this);
 				var containerMaxHeight = $container.parent().height() - $container.parent().find('.fc-content').height() - 19;
+				var $label = $container.parent().find('.fc-event-label');
+				if($label.length != 0) {
+                    containerMaxHeight -= $label.height();
+				}
 				while ($container.children().length > 0 && $container.height() > containerMaxHeight) {
 					$container.children().last().remove();
 					$container.children().last().text($container.children().last().text() + " ...")
@@ -990,6 +1008,7 @@ $(document).ready(function() {
 							$container.find('.light').empty();
 							$container.find('.accessory').empty();
 							$container.find('.video-editing').hide();
+							$container.find('.private-label').hide();
 							$container.find('.description-container').hide();
 							$container.find('.project-container').hide();
 							$container.find('.location-container').hide();
@@ -1006,6 +1025,9 @@ $(document).ready(function() {
 							if(!hasEquipment(event) && !event.isPrivate) {
 							    $popover.find('.video-editing').show();
 							}
+							if(event.isPrivate) {
+							    $popover.find('.private-label').show();
+                            }
 							function hasEquipment(event) {
 							    return event.camera.length !== 0
 							        || event.lens.length !== 0
@@ -1061,6 +1083,7 @@ $(document).ready(function() {
                                     $modal.find('#end-time').select2('val', event.end.hour() + ":" + padZero(event.end.minute()));
                                     $modal.find("#series").prop('checked', isSeries);
                                     $modal.find("#series").prop( "disabled", true );
+                                    $modal.find("#private").prop('checked', event.isPrivate);
                                     if(currentEvent.location) {
                                         showFormRightPart();
                                     } else {
@@ -1104,10 +1127,9 @@ $(document).ready(function() {
 		currentEvent = event;
 	}
 
-    function handlePrivateEvent(event) {
+    function handleEmptyUserEvent(event) {
         if(!event.users || !event.users.length) {
             event.users = [event.author];
-            event.isPrivate = true;
         }
     }
 
@@ -1116,7 +1138,7 @@ $(document).ready(function() {
         var url = event.isSeries ? SERIES_REST_URL : EVENT_REST_URL;
 		if(!currentEvent){
 			event.author = currentUser;
-            handlePrivateEvent(event);
+            handleEmptyUserEvent(event);
 			$.ajax({
 				type: "POST",
 				url: url,
@@ -1137,8 +1159,7 @@ $(document).ready(function() {
 			event.created = currentEvent.created;
 			event.id = currentEvent.id;
 			event.seriesId = currentEvent.seriesId;
-			event.isPrivate = currentEvent.isPrivate;
-			handlePrivateEvent(event);
+			handleEmptyUserEvent(event);
 			$.ajax({
 				type: "PUT",
 				url: url,
@@ -1346,6 +1367,7 @@ $(document).ready(function() {
 		$("#recording").prop("checked", false).trigger('change.radiocheck');
 		$("#series").prop("checked", false);
 		$("#series").prop( "disabled", false);
+		$("#private").prop("checked", false);
 		currentEvent = null;
 	}
 
@@ -1569,6 +1591,7 @@ $(document).ready(function() {
     $("select").select2({ dropdownCssClass : 'dropdown' });
     $("#recording").radiocheck();
     $("#series").radiocheck();
+    $("#private").radiocheck();
 
     function seriesOrSingleEventEdit() {
         var dfd = jQuery.Deferred();

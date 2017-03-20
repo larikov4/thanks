@@ -343,6 +343,11 @@ label.form-control-label.series {
     margin-left: 10px;
 }
 
+label.form-control-label.private {
+    width:65px;
+    margin-left: 10px;
+}
+
 .modal-edit .modal-dialog {
     width:428px;
 }
@@ -401,7 +406,7 @@ div.row.user .input-container {
     right: 5px;
 }
 
-.popover .video-editing {
+.popover .video-editing, .popover .private-label {
     text-align: center;
     background-color: #CCC;
     padding-bottom: 0;
@@ -987,14 +992,14 @@ select.ui-datepicker-year {
     border: 3px solid #34495e;
 }
 
-.recording-container {
+.fc-event-label {
     /*padding: 3px 8px;
     border-bottom: 1px solid #999;*/
     position:relative;
     height: 16px;
 }
 
-.recording-shadow {
+.fc-event-label-shadow {
     background-color: black;
     opacity: 0.2;
     position:absolute;
@@ -1004,7 +1009,7 @@ select.ui-datepicker-year {
     right:0;
 }
 
-.recording-container span {
+.fc-event-label span {
     position:absolute;
     top:0;
     left:0;
