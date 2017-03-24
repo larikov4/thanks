@@ -909,7 +909,8 @@ $(document).ready(function() {
                 $target.css('background-color', DEFAULT_EVENT_COLOR);
 		    }
 			if(view.type.contains("agend") && !event.isStub){
-			    if(event.description) {
+			    if((event.description && !event.isPrivate) ||
+			        (event.description && event.isPrivate && (containsUserName(event, currentUser.name) || IS_ADMIN))) {
 			        var descriptionElement = $("<span>")
 			            .addClass('fc-description')
 			            .text(event.description);
