@@ -611,16 +611,33 @@ $(document).ready(function() {
 
         $('.operator-bubble').on('click', function() {
             var values = $('#filter-user').select2("val");
-            var currentUser = $(this).text();
-            if(!values.contains(currentUser)) {
-                values.push($(this).text());
+            if($(this).hasClass('stub')) {
+                if($(this).hasClass('selected')) {
+                    $('.operator-bubble:not(.stub).selected').each(function(){
+                        addOrRemoveFromFilter.call(this);
+                    });
+                } else {
+                    $('.operator-bubble:not(.stub, .selected)').each(function(){
+                        addOrRemoveFromFilter.call(this);
+                    });
+                }
+                $(this).toggleClass('selected');
             } else {
-                var index = values.indexOf($(this).text());
-                values.splice(index, 1);
+                addOrRemoveFromFilter.call(this);
             }
-            $(this).toggleClass('selected');
             $('#filter-user').select2("val", values);
             $('#filter-user').trigger('change');
+
+            function addOrRemoveFromFilter() {
+                var currentUser = $(this).text();
+                if(!values.contains(currentUser)) {
+                    values.push($(this).text());
+                } else {
+                    var index = values.indexOf($(this).text());
+                    values.splice(index, 1);
+                }
+                $(this).toggleClass('selected');
+            }
         });
     })();
 
