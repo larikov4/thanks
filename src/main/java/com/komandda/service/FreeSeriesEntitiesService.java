@@ -42,7 +42,7 @@ public class FreeSeriesEntitiesService {
     private List<Event> getActiveEvents(Date start, Date end, String seriesId) {
         List<Event> activeEvents = new ArrayList<>();
 
-        List<Event> all = eventService.findAll();
+        List<Event> all = eventService.findAll(false);
         logger.info("All:" + all);
 
         for (Event event : all) {

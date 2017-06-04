@@ -208,6 +208,7 @@ $(document).ready(function() {
         fetchLocationAndEquipment($container, data, filterPrefix);
         fetchProjectFilter(data);
         mapIdsAndNames(data);
+        data.archived = IS_ARCHIVED;
         currentFilter = data;
         var url = isEmptyFilter(data) ? EVENT_REST_URL : EVENT_REST_URL + "/filter";
         performFilerRequest(data, url);
@@ -728,7 +729,13 @@ $(document).ready(function() {
 	 			revert: revert
 	 		});
 	 	},
-	 	eventAfterAllRender(){
+	 	eventAfterAllRender: function() {
+	 	    var leftButton = $('.btn-group').eq(0).find('button').eq(0);
+	 	    if(!IS_ARCHIVED && $('.fc-today-button').hasClass('fc-state-disabled')) {
+                leftButton.prop("disabled", true);
+            } else {
+                leftButton.prop("disabled", false);
+            }
 	 	    adaptCalendarHeight();
 	 	},
 	 	viewRender: function(view, element){

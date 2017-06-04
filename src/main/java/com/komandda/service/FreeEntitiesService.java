@@ -36,7 +36,7 @@ public class FreeEntitiesService {
     private List<Event> getActiveEvents(Date start, Date end, String id) {
         List<Event> activeEvents = new ArrayList<>();
 
-        List<Event> all = eventService.findAll();
+        List<Event> all = eventService.findAll(false);
         logger.info("All:" + all);
 
         for(Event event : all){

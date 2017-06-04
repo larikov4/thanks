@@ -68,7 +68,7 @@ public class SeriesService {
         emailSender.sendUpdatingEventEmail(updatingEvent, author, prevEvent);
         long startDateDiff = dateHelper.getDurationFromWeekBeginning(updatingEvent.getStart());
         long endDateDiff = dateHelper.getDurationFromWeekBeginning(updatingEvent.getEnd());
-        return eventService.findAll().stream()
+        return eventService.findAll(false).stream()
                 .filter(currentEvent -> updatingEvent.getSeriesId().equals(currentEvent.getSeriesId()))
                 .filter(currentEvent -> updatingEvent.getStart().before(currentEvent.getStart())
                         || updatingEvent.getId().equals(currentEvent.getId()))
@@ -86,7 +86,7 @@ public class SeriesService {
         emailSender.sendDeletingEventEmail(event, author);
         String seriesId = event.getSeriesId();
         seriesRepository.delete(seriesId);
-        return eventService.findAll().stream()
+        return eventService.findAll(false).stream()
                 .filter(e -> seriesId.equals(e.getSeriesId()))
                 .filter(e -> event.getStart().before(e.getStart()) || event.getStart().equals(e.getStart()))
                 .peek(e -> eventService.delete(e, author))
@@ -108,7 +108,7 @@ public class SeriesService {
     @Scheduled(cron = "0 0 23 * * ?")
     public void addSeriesEvents() {
         Date threeWeeksLater = dateHelper.asDate(LocalDateTime.now().plusWeeks(WEEKS_AMOUNT_IN_SERIES - 1));
-        List<Event> events = eventService.findAll();
+        List<Event> events = eventService.findAll(false);
         seriesRepository.findAll().stream()
                 .filter(series -> series.getEnd().before(threeWeeksLater))
                 .map(Series::getId)

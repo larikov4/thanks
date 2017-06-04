@@ -33,8 +33,8 @@ public class EventController {
     private PermissionChecker permissionChecker;
 
     @RequestMapping(method = RequestMethod.GET)
-    public List<Event> findAll() {
-        return service.findAll();
+    public List<Event> findAll(@RequestParam(required = false, name = "archived") boolean archived) {
+        return service.findAll(archived);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
@@ -46,8 +46,9 @@ public class EventController {
     public List<Event> findBy(@RequestParam(required = false, name = "location")String locationId,
                               @RequestParam(required = false, name = "projects[]") List<String> projectIds,
                               @RequestParam(required = false, name = "users[]") List<String> userIds,
-                              @RequestParam(required = false, name = "equipment[]") List<String> equipmentIds) {
-        EventFilterDto dto = new EventFilterDto(locationId, projectIds, userIds, equipmentIds);
+                              @RequestParam(required = false, name = "equipment[]") List<String> equipmentIds,
+                              @RequestParam(required = false, name = "archived") boolean archived) {
+        EventFilterDto dto = new EventFilterDto(locationId, projectIds, userIds, equipmentIds, archived);
         return service.findBy(dto);
     }
 
