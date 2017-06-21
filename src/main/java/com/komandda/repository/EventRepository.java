@@ -18,6 +18,4 @@ public interface EventRepository extends MongoRepository<Event, String> {
     @Query("{'start' : {$gt : ?0}, 'end':{$lt : ?1}}")
     List<Event> findBetweenTwoDatesQuery(Date start, Date end);
 
-    @Query("{'end':{$gt : ?0}}")
-    List<Event> findAfter(Date start);
 }

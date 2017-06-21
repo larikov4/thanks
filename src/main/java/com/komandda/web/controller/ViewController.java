@@ -38,22 +38,12 @@ public class ViewController {
 
     @RequestMapping("/")
     public String home(Model model) {
-        model.addAttribute("events", eventService.findAll(false));
+        model.addAttribute("events", eventService.findAll());
         model.addAttribute("users", userService.findAll());
         model.addAttribute("equipment", equipmentService.findAll());
         model.addAttribute("locations", locationService.findAll());
         model.addAttribute("projects", projectService.findAll());
         return "calendar";
-    }
-
-    @RequestMapping("/archived")
-    public String archived(Model model) {
-        model.addAttribute("events", eventService.findAll(true));
-        model.addAttribute("users", userService.findAll());
-        model.addAttribute("equipment", equipmentService.findAll());
-        model.addAttribute("locations", locationService.findAll());
-        model.addAttribute("projects", projectService.findAll());
-        return "archived";
     }
 
     @RequestMapping("/users")

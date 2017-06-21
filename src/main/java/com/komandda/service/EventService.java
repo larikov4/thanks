@@ -5,7 +5,6 @@ import com.komandda.exception.UsingBusyResourcesException;
 import com.komandda.repository.EventRepository;
 import com.komandda.service.email.service.EventEmailSenderService;
 import com.komandda.service.filter.EventFilterDto;
-import com.komandda.service.helper.DateHelper;
 import com.komandda.validator.FreeEntitiesValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,14 +38,8 @@ public class EventService {
     @Autowired
     private FreeEntitiesValidator validator;
 
-    @Autowired
-    private DateHelper dateHelper;
-
-    public List<Event> findAll(boolean archived) {
-        if(archived) {
-            return hidePassword(repository.findAll());
-        }
-        return hidePassword(repository.findAfter(dateHelper.getWeekBeginning(new Date())));
+    public List<Event> findAll() {
+        return hidePassword(repository.findAll());
     }
 
     public Event findOne(String id) {
@@ -110,7 +103,7 @@ public class EventService {
         List<String> safeNames = Optional.ofNullable(names).orElse(Collections.emptyList());
         List<String> safeProjectsIds = Optional.ofNullable(projectsIds).orElse(Collections.emptyList());
         List<String> safeEquipmentIds = Optional.ofNullable(equipmentIds).orElse(Collections.emptyList());
-        List<Event> events = findAll(dto.isArchived());
+        List<Event> events = findAll();
         if(!safeProjectsIds.isEmpty()) {
             events = events.stream()
                     .filter(event -> Objects.nonNull(event.getProject()))
