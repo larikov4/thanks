@@ -15,7 +15,9 @@ import java.util.List;
  */
 public interface EventRepository extends MongoRepository<Event, String> {
 
-    @Query("{'start' : {$gt : ?0}, 'end':{$lt : ?1}}")
+    @Query("{'end' : {$gt : ?0}, 'start':{$lt : ?1}}")
     List<Event> findBetweenTwoDatesQuery(Date start, Date end);
+
+    List<Event> findBySeriesId(String seriesId);
 
 }

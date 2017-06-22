@@ -29,6 +29,8 @@ $(document).ready(function() {
 	var DEFAULT_EVENT_COLOR = '#BDC3C7';
 	var wasModalSubmitted = false;
 	var columnConfig = null;
+	var dateRange = {};
+	var firstTime = true;
 
     function mapEquipmentType(equipment) {
         return equipment.map(function(item){
@@ -208,6 +210,7 @@ $(document).ready(function() {
         fetchLocationAndEquipment($container, data, filterPrefix);
         fetchProjectFilter(data);
         mapIdsAndNames(data);
+        addDates(data);
         currentFilter = data;
         var url = isEmptyFilter(data) ? EVENT_REST_URL : EVENT_REST_URL + "/filter";
         performFilerRequest(data, url);
@@ -224,6 +227,11 @@ $(document).ready(function() {
             data.projects.push(repo.projects[$(this).data('name')]);
         });
         return data;
+    }
+
+    function addDates(data) {
+        data.start = dateRange.start.format('YYYY-MM-DD') + "T" + padTime(dateRange.start)
+        data.end = dateRange.end.format('YYYY-MM-DD') + "T" + padTime(dateRange.end)
     }
 
     function performFilerRequest(data, url){
@@ -873,6 +881,21 @@ $(document).ready(function() {
                     $element.css('width', percentOfWidth + '%');
                 })
             }
+
+            if(currentFilter) {
+                $('.project').each(function() {
+                    if (currentFilter.projects.contains(repo.projects[$(this).data('name')])) {
+                        $(this).addClass('selected');
+                    }
+                });
+            }
+
+            dateRange.start = view.start;
+            dateRange.end = view.end;
+            if(!firstTime) {
+                filterEvents();
+            }
+            firstTime = false;
 	 	},
 		dayClick: !IS_EDITABLE ? function(){} : function(date) {
 			currentEvent = null;

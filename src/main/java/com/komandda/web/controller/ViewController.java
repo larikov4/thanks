@@ -38,7 +38,7 @@ public class ViewController {
 
     @RequestMapping("/")
     public String home(Model model) {
-        model.addAttribute("events", eventService.findAll());
+        model.addAttribute("events", eventService.findOnCurrentWeek());
         model.addAttribute("users", userService.findAll());
         model.addAttribute("equipment", equipmentService.findAll());
         model.addAttribute("locations", locationService.findAll());

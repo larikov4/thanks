@@ -48,7 +48,7 @@ public class DashboardService {
     private FreeSlotOperatorDatasetBuilder freeSlotOperatorDatasetBuilder;
 
     public Dashboard buildDashboard() {
-        List<Event> events = eventService.findAll();
+        List<Event> events = eventService.findOnCurrentWeek();
         List<Event> thisMonthEvents = getThisMonthEvents(events);
         List<Event> thisWeekEvents = getThisWeekEvents(events);
         Dashboard dashboard = new Dashboard();

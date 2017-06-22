@@ -3,6 +3,8 @@ package com.komandda.service.helper;
 import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -15,6 +17,8 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 public class DateHelper {
+
+    private static final SimpleDateFormat DATE_TIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
 
     public Date asDate(LocalDateTime localDateTime) {
         return new Date(localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
@@ -114,5 +118,13 @@ public class DateHelper {
 
     public Date getNextWeekBeggining(Date startDate) {
         return getWeekBeginning(plusDays(startDate, 7));
+    }
+
+    public String format(Date date) {
+        return DATE_TIME_FORMATTER.format(date);
+    }
+
+    public Date parse(String date) throws ParseException {
+        return DATE_TIME_FORMATTER.parse(date);
     }
 }

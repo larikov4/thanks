@@ -4,16 +4,16 @@ import com.komandda.entity.Event;
 import com.komandda.entity.User;
 import com.komandda.service.EventService;
 import com.komandda.service.filter.EventFilterDto;
+import com.komandda.service.helper.DateHelper;
 import com.komandda.web.controller.rest.permission.PermissionChecker;
-import com.komandda.web.controller.rest.permission.exception.MissingPermissionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -32,9 +32,12 @@ public class EventController {
     @Autowired
     private PermissionChecker permissionChecker;
 
+    @Autowired
+    private DateHelper dateHelper;
+
     @RequestMapping(method = RequestMethod.GET)
-    public List<Event> findAll() {
-        return service.findAll();
+    public List<Event> findAll(@RequestParam String start, @RequestParam String end) throws ParseException {
+        return service.findBetween(dateHelper.parse(start), dateHelper.parse(end));
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
@@ -43,11 +46,15 @@ public class EventController {
     }
 
     @RequestMapping(value = "/filter", method = RequestMethod.GET)
-    public List<Event> findBy(@RequestParam(required = false, name = "location")String locationId,
+    public List<Event> findBy(@RequestParam String start,
+                              @RequestParam String end,
+                              @RequestParam(required = false, name = "location")String locationId,
                               @RequestParam(required = false, name = "projects[]") List<String> projectIds,
                               @RequestParam(required = false, name = "users[]") List<String> userIds,
-                              @RequestParam(required = false, name = "equipment[]") List<String> equipmentIds) {
-        EventFilterDto dto = new EventFilterDto(locationId, projectIds, userIds, equipmentIds);
+                              @RequestParam(required = false, name = "equipment[]") List<String> equipmentIds) throws ParseException {
+        EventFilterDto dto = new EventFilterDto(dateHelper.parse(start),
+                dateHelper.parse(end),
+                locationId, projectIds, userIds, equipmentIds);
         return service.findBy(dto);
     }
 

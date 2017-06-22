@@ -4,7 +4,6 @@ import com.komandda.entity.Equipment;
 import com.komandda.entity.Event;
 import com.komandda.entity.Location;
 import com.komandda.entity.User;
-import com.komandda.service.helper.DateHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +35,7 @@ public class FreeEntitiesService {
     private List<Event> getActiveEvents(Date start, Date end, String id) {
         List<Event> activeEvents = new ArrayList<>();
 
-        List<Event> all = eventService.findAll();
+        List<Event> all = eventService.findBetween(start, end);
         logger.info("All:" + all);
 
         for(Event event : all){

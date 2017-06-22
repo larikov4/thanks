@@ -5,6 +5,7 @@ import com.komandda.exception.UsingBusyResourcesException;
 import com.komandda.repository.EventRepository;
 import com.komandda.service.email.service.EventEmailSenderService;
 import com.komandda.service.filter.EventFilterDto;
+import com.komandda.service.helper.DateHelper;
 import com.komandda.validator.FreeEntitiesValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,12 +39,24 @@ public class EventService {
     @Autowired
     private FreeEntitiesValidator validator;
 
-    public List<Event> findAll() {
-        return hidePassword(repository.findAll());
+    @Autowired
+    private DateHelper dateHelper;
+
+    public List<Event> findOnCurrentWeek() {
+        return hidePassword(repository.findBetweenTwoDatesQuery(dateHelper.getWeekBeginning(new Date()),
+                dateHelper.getNextWeekBeggining(new Date())));
+    }
+
+    public List<Event> findBetween(Date start, Date end) {
+        return hidePassword(repository.findBetweenTwoDatesQuery(start, end));
     }
 
     public Event findOne(String id) {
         return hidePassword(repository.findOne(id));
+    }
+
+    public List<Event> findBySeriesId(String seriesId) {
+        return hidePassword(repository.findBySeriesId(seriesId));
     }
 
     public Event insert(Event event, User author) {
@@ -103,7 +116,7 @@ public class EventService {
         List<String> safeNames = Optional.ofNullable(names).orElse(Collections.emptyList());
         List<String> safeProjectsIds = Optional.ofNullable(projectsIds).orElse(Collections.emptyList());
         List<String> safeEquipmentIds = Optional.ofNullable(equipmentIds).orElse(Collections.emptyList());
-        List<Event> events = findAll();
+        List<Event> events = findBetween(dto.getStart(), dto.getEnd());
         if(!safeProjectsIds.isEmpty()) {
             events = events.stream()
                     .filter(event -> Objects.nonNull(event.getProject()))
