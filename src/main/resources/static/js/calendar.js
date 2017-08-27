@@ -1204,7 +1204,9 @@ $(document).ready(function() {
 			}).fail(function(e){
 			    if(e.status === 409) {
 			        fillSelectsIfFieldsIsReady();
-			        $(".modal-edit .modal-body form").valid();
+			        if ($(".modal-edit .modal-body form").valid()) {
+			            toastr["warning"]("Some resources are busy. Please check or refresh the page.");
+			        }
 			    } else {
 				    toastr["error"]("Server error #5. Please refresh the page.");
 			    }
@@ -1229,7 +1231,9 @@ $(document).ready(function() {
                     toastr["warning"]("You don't have permission to edit this event.");
                 } else if(e.status === 409) {
                     fillSelectsIfFieldsIsReady();
-                    $(".modal-edit .modal-body form").valid();
+                    if ($(".modal-edit .modal-body form").valid()) {
+                        toastr["warning"]("Some resources are busy. Please check or refresh the page.");
+                    }
                 } else {
 				    toastr["error"]("Server error #6. Please refresh the page.");
                 }
