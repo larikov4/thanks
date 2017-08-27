@@ -907,6 +907,13 @@ $(document).ready(function() {
 				var endTime = date.hour() > 20 ? date.hour() : ( date.hour() + 3 ) + ":" + padZero(date.minute());
 				$modal.find('#end-time').val(endTime).trigger('change');
 			}
+            if(currentFilter && currentFilter.projects) {
+                var value = _.findKey(repo.projects, _.partial(_.isEqual, currentFilter.projects[0]));
+			    $modal.find("#project").val(value).trigger('change');
+            }
+            if(currentFilter && currentFilter.users) {
+			    $modal.find("#user").select2('val', currentFilter.users).trigger('change');
+            }
 			$modal.modal('show');
 		},
         selectable:IS_EDITABLE,
@@ -920,6 +927,13 @@ $(document).ready(function() {
                 $modal.find('#start-time').select2('val', start.hour() + ":" + padZero(start.minute()));
                 $modal.find('#end-time').select2('val', end.hour() + ":" + padZero(end.minute()));
                 $modal.find('#end-time').trigger('change');
+                if(currentFilter && currentFilter.projects) {
+                    var value = _.findKey(repo.projects, _.partial(_.isEqual, currentFilter.projects[0]));
+                    $modal.find("#project").val(value).trigger('change');
+                }
+                if(currentFilter && currentFilter.users) {
+                    $modal.find("#user").select2('val', currentFilter.users).trigger('change');
+                }
                 $modal.modal('show');
             }
             $('#calendar').fullCalendar('unselect');
