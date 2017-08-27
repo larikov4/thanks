@@ -1005,6 +1005,7 @@ $(document).ready(function() {
                     }
                 }
 				$target.append(gridHolder);
+				$target.hide();
 			}
 
             function containsUserName(event, name) {
@@ -1023,6 +1024,7 @@ $(document).ready(function() {
             }
 		},
 		eventAfterRender: function (event, $target){
+		    $target.fadeIn(1000);
 	 		$target.addClass('popover-target');
 			var $container = $('.equipment-container').each(function(){
 				$container = $(this);
