@@ -736,8 +736,14 @@ $(document).ready(function() {
 	 			revert: revert
 	 		});
 	 	},
-	 	eventAfterAllRender(){
+	 	defaultDate: (function(){ return $.url(window.location.href).fparam('start');})(),
+	 	eventAfterAllRender(view){
 	 	    adaptCalendarHeight();
+            if($('.fc-today-button').hasClass('fc-state-disabled')) {
+                window.location.hash = ""
+            } else {
+                window.location.hash = 'start=' + view.start.format('YYYY-MM-DD');
+            }
 	 	},
 	 	viewRender: function(view, element){
 	 	    (function modifyButtons(){
@@ -892,7 +898,7 @@ $(document).ready(function() {
 
             dateRange.start = view.start;
             dateRange.end = view.end;
-            if(!firstTime) {
+            if(!firstTime || window.location.hash) {
                 filterEvents();
             }
             firstTime = false;
