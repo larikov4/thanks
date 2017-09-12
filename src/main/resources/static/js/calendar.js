@@ -612,7 +612,7 @@ $(document).ready(function() {
         for(var i=0;i<Object.keys(repo.users).length;i++) {
             var username = Object.keys(repo.users)[i];
             var user = repo.users[username];
-            if(user.operator) {
+            if(user.operator && !user.deleted) {
                 $container.append($bubble.clone().text(user.name));
             }
         }
